@@ -390,6 +390,8 @@
       );
     }
 
+
+
     // Storm circle
     let stormCircle = null;
     function drawStorm(centerLatLng, radiusMeters) {
@@ -447,6 +449,8 @@
         stormMask.setLatLngs([outer, inner]);
       }
     }
+
+let isHostLocal = false;
 
     // ============================================================
     // Host start center marker
@@ -679,10 +683,15 @@
       const p = parseHashParams();
       if (!p || !p.v) return false;
 
-      // Guest mode: hide host UI permanently
-      pickOverlay.style.display = "none";
-      panel.classList.add("hidden");
-      showUiWrap.style.display = "none";
+      // If I'm not the host on this device, treat as guest and hide host UI
+		if (!isHostLocal) {
+		  pickOverlay.style.display = "none";
+		  panel.classList.add("hidden");
+		  showUiWrap.style.display = "none";
+		} else {
+		  // host who started the game should still be able to copy/hide UI
+		  copyBtn.disabled = false;
+		}
 
       const v = Number(p.v);
       if (v !== 1) return false;
@@ -734,7 +743,9 @@
     // ============================================================
     startBtn.onclick = () => {
       if (!chosenStartCenter) return;
-
+	
+	isHostLocal = true;
+	
       const seed = (crypto?.getRandomValues)
         ? (crypto.getRandomValues(new Uint32Array(1))[0] >>> 0)
         : (Math.floor(Math.random() * 2147483647) >>> 0);
@@ -755,6 +766,8 @@
         seed: seed,
         t0: startedAtMs
       };
+
+
 
       setHashParams(params);
 
@@ -792,6 +805,7 @@
     resetBtn.onclick = () => {
       location.hash = "";
       activeState = null;
+		isHostLocal = false;
 
       eliminated = false;
       elimOverlay.style.display = "none";
