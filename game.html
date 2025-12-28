@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>IRL Storm Hide & Seek (Seeded • No Server)</title>
+  <title>IRL Storm Hide & Seek</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,14 +20,28 @@
       z-index: 1000;
       width: 360px;
       max-width: calc(100vw - 20px);
-      background: rgba(255,255,255,.65);
+      background: rgba(255,255,255,.01);
       border: 1px solid rgba(0,0,0,.18);
       border-radius: 14px;
       padding: 10px 12px;
       box-shadow: 0 10px 30px rgba(0,0,0,.12);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(1px);
       -webkit-backdrop-filter: blur(8px);
     }
+	
+	
+#panel * {
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.85),
+    1px 0 0 rgba(255,255,255,.85),
+   -1px 0 0 rgba(255,255,255,.85),
+    0 -1px 0 rgba(255,255,255,.85),
+    0 0 6px rgba(0,0,0,.35);
+	
+	font-weight:700;
+	
+}
+
     #panel.hidden { display:none; }
 
     #panel h2{ margin:0 0 8px; font-size: 14px; }
@@ -251,9 +265,9 @@
 
   <!-- Host-only controls -->
   <div id="panel" class="hidden">
-    <h2>Host Controls (Seeded Link)</h2>
+    <h2>Host Controls</h2>
     <div class="note">
-      Adjust sliders. The ring updates live. Then press <b>Start</b> and <b>Copy link</b>.
+      Adjust sliders.Then press <b>Start</b> and <b>Copy link</b>.
     </div>
 
     <div class="row">
