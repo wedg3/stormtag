@@ -12,7 +12,7 @@
     html, body { height:100%; margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
     #map { height:100%; }
 
-    /* Host panel */
+    /* Host panel (host-only) */
     #panel{
       position: fixed;
       top: 10px;
@@ -69,59 +69,16 @@
     }
     button:disabled{ opacity:.45; cursor:not-allowed; }
 
-    #status{
+    #statusSmall{
       margin-top: 8px;
       font-size: 12px;
       color: #111;
       line-height: 1.35;
       white-space: pre-wrap;
+      opacity: .9;
     }
 
-    /* HUD */
-    #healthBox{
-      position: fixed;
-      right: 10px;
-      top: 10px;
-      z-index: 1000;
-      background: rgba(0,0,0,.48);
-      border: 1px solid rgba(255,255,255,.6);
-      border-radius: 14px;
-      padding: 10px 12px;
-      color: #fff;
-      min-width: 170px;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-    #healthTitle{ font-size: 12px; opacity: .9; }
-    #healthValue{ font-size: 20px; font-weight: 900; margin-top: 2px; }
-    #healthSub{ font-size: 12px; opacity: .9; margin-top: 4px; }
-
-    /* Eliminated overlay */
-    #eliminated{
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,.72);
-      color: #fff;
-      text-align: center;
-      padding: 18px;
-    }
-    #eliminated .card{
-      max-width: 520px;
-      width: calc(100vw - 36px);
-      background: rgba(20,20,20,.9);
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 18px;
-      padding: 18px 16px;
-      box-shadow: 0 16px 50px rgba(0,0,0,.4);
-    }
-    #eliminated h1{ margin:0 0 8px; font-size: 26px; }
-    #eliminated p{ margin:0; opacity: .92; line-height: 1.35; }
-
-    /* Center-pick overlay (host only, before start center chosen) */
+    /* Host pick overlay (host-only before picking center) */
     #pickOverlay{
       position: fixed;
       inset: 0;
@@ -148,24 +105,155 @@
       color: #111;
     }
     #pickOverlay .bubble b{ font-weight: 900; }
+
+    /* Host "Show UI" button wrapper (host-only) */
+    #showUiWrap{
+      position:fixed;
+      left:10px;
+      bottom:10px;
+      z-index:1200;
+      display:none;
+    }
+    #showUiBtn{
+      padding:10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.75);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.25);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* HEALTH HUD (top right) */
+    #healthHud{
+      position: fixed;
+      right: 10px;
+      top: 10px;
+      z-index: 1100;
+      background: rgba(0,0,0,.42);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 14px;
+      padding: 8px 10px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      user-select: none;
+    }
+    #heartIcon{
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+      opacity: .95;
+    }
+    #healthValue{
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .5px;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    /* BIG STATUS (bottom center) */
+    #bigStatus{
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      z-index: 1100;
+      width: min(520px, calc(100vw - 28px));
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 16px;
+      padding: 10px 12px;
+      color: #fff;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      pointer-events: none;
+      user-select: none;
+    }
+    #bigStatus .main{
+      font-size: 18px;
+      font-weight: 950;
+      letter-spacing: .6px;
+    }
+    #bigStatus .sub{
+      margin-top: 2px;
+      font-size: 13px;
+      opacity: .9;
+      letter-spacing: .2px;
+      min-height: 1.1em;
+    }
+    #bigStatus.danger{
+      background: rgba(120,0,0,.28);
+      border-color: rgba(255,120,120,.55);
+    }
+
+    /* ELIMINATED overlay (non-interactable, map still pans) */
+    #elimOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none; /* important: allow map interaction */
+      user-select: none;
+    }
+    #elimOverlay .textWrap{
+      text-align: center;
+      padding: 18px;
+      width: min(680px, calc(100vw - 36px));
+    }
+    #elimOverlay .big{
+      font-size: clamp(34px, 8vw, 68px);
+      font-weight: 1000;
+      letter-spacing: 1px;
+      color: rgba(255, 60, 60, .35);
+      text-shadow: 0 10px 40px rgba(0,0,0,.35);
+    }
+    #elimOverlay .small{
+      margin-top: 8px;
+      font-size: clamp(14px, 3.3vw, 18px);
+      color: rgba(255, 255, 255, .35);
+      letter-spacing: .4px;
+    }
+
+    /* Thick red frame when eliminated */
+    #elimFrame{
+      position: fixed;
+      inset: 8px;
+      z-index: 1900;
+      display: none;
+      pointer-events: none;
+      border: 6px solid rgba(255, 50, 50, .55);
+      border-radius: 18px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0); /* no dim, just frame */
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
-  <!-- Host-only: pick-center hint overlay -->
+  <!-- Host-only: pick center hint overlay -->
   <div id="pickOverlay">
     <div class="bubble">
-      <b>Tap the map to choose the starting safe-zone center.<br/>
-     
+      <b>Host:</b> Tap the map to choose the starting safe-zone center.<br/>
+      Then you’ll get the sliders to tune the storm and share the link.
     </div>
   </div>
 
-  <!-- Host-only controls panel -->
+  <!-- Host-only controls -->
   <div id="panel" class="hidden">
-    <h2>Host Controls)</h2>
+    <h2>Host Controls (Seeded Link)</h2>
     <div class="note">
-      Adjust sliders. Then press <b>Start</b> and <b>Copy link</b>.
+      Adjust sliders. The ring updates live. Then press <b>Start</b> and <b>Copy link</b>.
     </div>
 
     <div class="row">
@@ -213,24 +301,32 @@
       <button id="resetBtn" class="secondary">Reset</button>
     </div>
 
-    <div id="status"></div>
+    <div id="statusSmall"></div>
   </div>
 
-  <!-- Small always-available "Show UI" button (host only, hidden for guests) -->
-  <div id="showUiWrap" style="position:fixed; left:10px; bottom:10px; z-index:1200; display:none;">
-    <button id="showUiBtn" class="secondary" style="padding:10px 12px; border-radius: 14px;">Show UI</button>
+  <!-- Host-only: show UI button -->
+  <div id="showUiWrap">
+    <button id="showUiBtn">Show UI</button>
   </div>
 
-  <div id="healthBox">
-    <div id="healthTitle">Your health</div>
+  <!-- Health HUD -->
+  <div id="healthHud">
+    <img id="heartIcon" src="heart.png" alt="heart" />
     <div id="healthValue">100</div>
-    <div id="healthSub">Waiting…</div>
   </div>
 
-  <div id="eliminated">
-    <div class="card">
-      <h1>ELIMINATED</h1>
-      <p>You’re out. You are now a finder/catcher!</p>
+  <!-- Big status -->
+  <div id="bigStatus">
+    <div class="main" id="bsMain">Waiting…</div>
+    <div class="sub" id="bsSub"></div>
+  </div>
+
+  <!-- Eliminated visuals (non-interactable) -->
+  <div id="elimFrame"></div>
+  <div id="elimOverlay">
+    <div class="textWrap">
+      <div class="big">ELIMINATED</div>
+      <div class="small">You are now a catcher</div>
     </div>
   </div>
 
@@ -301,7 +397,60 @@
       else { stormCircle.setLatLng(centerLatLng); stormCircle.setRadius(radiusMeters); }
     }
 
+    // ============================================================
+    // Blue "storm" mask outside the safe circle
+    // Implemented as a polygon with a "hole" (inner ring = safe circle)
+    // ============================================================
+    let stormMask = null;
+
+    function destinationPoint(lat, lng, bearingDeg, distanceM) {
+      const R = 6371000; // earth radius
+      const brng = bearingDeg * Math.PI/180;
+      const lat1 = lat * Math.PI/180;
+      const lon1 = lng * Math.PI/180;
+      const dr = distanceM / R;
+
+      const lat2 = Math.asin(Math.sin(lat1)*Math.cos(dr) + Math.cos(lat1)*Math.sin(dr)*Math.cos(brng));
+      const lon2 = lon1 + Math.atan2(Math.sin(brng)*Math.sin(dr)*Math.cos(lat1), Math.cos(dr) - Math.sin(lat1)*Math.sin(lat2));
+      return [lat2 * 180/Math.PI, lon2 * 180/Math.PI];
+    }
+
+    function circleRingLatLngs(center, radiusM, points=96) {
+      const ring = [];
+      for (let i=0; i<points; i++) {
+        const b = (i / points) * 360;
+        const p = destinationPoint(center.lat, center.lng, b, radiusM);
+        ring.push([p[0], p[1]]);
+      }
+      return ring;
+    }
+
+    function updateStormMask(center, radiusM) {
+      // Outer ring: world-ish rectangle (bigger than map)
+      const outer = [
+        [-85, -180],
+        [-85,  180],
+        [ 85,  180],
+        [ 85, -180]
+      ];
+      const inner = circleRingLatLngs(center, radiusM, 96);
+
+      if (!stormMask) {
+        stormMask = L.polygon([outer, inner], {
+          stroke: false,
+          fill: true,
+          fillColor: "#2a7fff",
+          fillOpacity: 0.48,
+          interactive: false
+        }).addTo(map);
+      } else {
+        stormMask.setLatLngs([outer, inner]);
+      }
+    }
+
+    // ============================================================
     // Host start center marker
+    // ============================================================
     let startCenterMarker = null;
     let chosenStartCenter = null;
 
@@ -346,7 +495,6 @@
     // ============================================================
     // State
     // ============================================================
-    // activeState exists when loaded from URL (guest) or after host pressed Start
     let activeState = null;
 
     function buildSeededPhases(st) {
@@ -406,23 +554,23 @@
     }
 
     // ============================================================
-    // Health (local-only)
+    // Health (local-only) + eliminated visuals
     // ============================================================
     let health = 100;
     let eliminated = false;
     let lastTickMs = Date.now();
 
     const healthValueEl = document.getElementById("healthValue");
-    const healthSubEl = document.getElementById("healthSub");
-    const eliminatedEl = document.getElementById("eliminated");
+    const elimOverlay = document.getElementById("elimOverlay");
+    const elimFrame = document.getElementById("elimFrame");
 
     function setHealth(val){
       health = Math.max(0, Math.min(100, val));
       healthValueEl.textContent = String(Math.round(health));
       if (health <= 0 && !eliminated) {
         eliminated = true;
-        eliminatedEl.style.display = "flex";
-        healthSubEl.textContent = "You are OUT.";
+        elimOverlay.style.display = "flex";
+        elimFrame.style.display = "block";
       }
     }
 
@@ -443,7 +591,7 @@
     const resetBtn = document.getElementById("resetBtn");
     const startBtn = document.getElementById("startBtn");
     const copyBtn = document.getElementById("copyBtn");
-    const statusEl = document.getElementById("status");
+    const statusSmall = document.getElementById("statusSmall");
 
     const startRadiusEl = document.getElementById("startRadius");
     const delaySecEl = document.getElementById("delaySec");
@@ -461,6 +609,10 @@
     const v_phases = document.getElementById("v_phases");
     const v_dps    = document.getElementById("v_dps");
 
+    const bsMain = document.getElementById("bsMain");
+    const bsSub  = document.getElementById("bsSub");
+    const bigStatus = document.getElementById("bigStatus");
+
     function reflectSliderValues(){
       v_radius.textContent = `${startRadiusEl.value} m`;
       v_delay.textContent  = `${delaySecEl.value} s`;
@@ -474,12 +626,14 @@
 
     function previewStartCircle(){
       const r = Number(startRadiusEl.value);
-      if (chosenStartCenter && r > 0) drawStorm(chosenStartCenter, r);
+      if (chosenStartCenter && r > 0) {
+        drawStorm(chosenStartCenter, r);
+        updateStormMask(chosenStartCenter, r);
+      }
     }
 
     function enableHostPanel(){
-      // Only host mode shows panel; guests never see it.
-      if (activeState) return; // if already started/loaded, don't show host setup
+      if (activeState) return;
       pickOverlay.style.display = "none";
       panel.classList.remove("hidden");
       showUiWrap.style.display = "none";
@@ -506,19 +660,15 @@
       });
     }
 
-    // ============================================================
-    // Host flow: choose center FIRST
-    // ============================================================
     function isGuestLinkPresent() {
       const p = parseHashParams();
       return !!p.v;
     }
 
-    // If not a guest link, start in "host pick center" mode with no panel.
-    // Tapping map sets center and reveals panel.
+    // Host chooses center by tapping map (only if not active and not guest link)
     map.on("click", (e) => {
-      if (activeState) return;          // guests/started game: no host setup
-      if (isGuestLinkPresent()) return; // if link present but failed parse, still treat as guest-ish
+      if (activeState) return;
+      if (isGuestLinkPresent()) return;
       setStartCenter(e.latlng);
     });
 
@@ -535,7 +685,7 @@
       showUiWrap.style.display = "none";
 
       const v = Number(p.v);
-      if (v !== 1) { healthSubEl.textContent = "Bad link version."; return false; }
+      if (v !== 1) return false;
 
       const baseCenter = { lat: Number(p.lat), lng: Number(p.lng) };
       const baseRadiusM = Number(p.r);
@@ -548,10 +698,7 @@
       const seed = Number(p.seed) >>> 0;
       const startedAtMs = Number(p.t0);
 
-      if (![baseCenter.lat, baseCenter.lng, baseRadiusM, seed, startedAtMs].every(Number.isFinite)) {
-        healthSubEl.textContent = "Invalid link.";
-        return false;
-      }
+      if (![baseCenter.lat, baseCenter.lng, baseRadiusM, seed, startedAtMs].every(Number.isFinite)) return false;
 
       activeState = {
         version: 1,
@@ -571,19 +718,20 @@
 
       map.setView([baseCenter.lat, baseCenter.lng], 14);
       drawStorm(baseCenter, baseRadiusM);
+      updateStormMask(L.latLng(baseCenter.lat, baseCenter.lng), baseRadiusM);
 
+      // reset local health
       eliminated = false;
-      eliminatedEl.style.display = "none";
+      elimOverlay.style.display = "none";
+      elimFrame.style.display = "none";
       setHealth(100);
-      healthSubEl.textContent = "Game running.";
+
       return true;
     }
 
     // ============================================================
-    // Host Start -> generates seeded link, activates state, enables copy
+    // Host Start -> generates seeded link
     // ============================================================
-    function setHashParamsSafe(params) { setHashParams(params); }
-
     startBtn.onclick = () => {
       if (!chosenStartCenter) return;
 
@@ -593,34 +741,24 @@
 
       const startedAtMs = Date.now();
 
-      const cfg = {
-        baseRadiusM: Number(startRadiusEl.value),
-        delaySec: Number(delaySecEl.value),
-        shrinkFactor: Number(shrinkFactorEl.value),
-        shrinkSec: Number(shrinkTimeEl.value),
-        holdSec: Number(holdTimeEl.value),
-        phasesCount: Number(phasesEl.value),
-        dps: Number(dpsEl.value)
-      };
-
       const params = {
         v: 1,
         lat: chosenStartCenter.lat.toFixed(6),
         lng: chosenStartCenter.lng.toFixed(6),
-        r: Math.round(cfg.baseRadiusM),
-        delay: Math.round(cfg.delaySec),
-        factor: cfg.shrinkFactor.toFixed(2),
-        shrink: Math.round(cfg.shrinkSec),
-        hold: Math.round(cfg.holdSec),
-        phases: Math.round(cfg.phasesCount),
-        dps: Math.round(cfg.dps),
+        r: Math.round(Number(startRadiusEl.value)),
+        delay: Math.round(Number(delaySecEl.value)),
+        factor: Number(shrinkFactorEl.value).toFixed(2),
+        shrink: Math.round(Number(shrinkTimeEl.value)),
+        hold: Math.round(Number(holdTimeEl.value)),
+        phases: Math.round(Number(phasesEl.value)),
+        dps: Math.round(Number(dpsEl.value)),
         seed: seed,
         t0: startedAtMs
       };
 
-      setHashParamsSafe(params);
+      setHashParams(params);
 
-      // Activate as if guest loaded (but host keeps ability to copy/hide UI)
+      // Activate local state (host)
       activeState = {
         version: 1,
         seed,
@@ -638,65 +776,78 @@
       activeState.phases = buildSeededPhases(activeState);
 
       copyBtn.disabled = false;
-      statusEl.textContent = "Started. Copy and share the link.";
-      healthSubEl.textContent = "Game running.";
-
-      // Keep panel visible, but user can hide it.
+      statusSmall.textContent = "Started. Copy and share the link.";
+      // keep UI visible; host can hide
     };
 
     copyBtn.onclick = async () => {
       try {
         await navigator.clipboard.writeText(location.href);
-        statusEl.textContent = "Copied share link ✅";
+        statusSmall.textContent = "Copied share link ✅";
       } catch {
         prompt("Copy this link:", location.href);
       }
     };
 
     resetBtn.onclick = () => {
-      // Only host reset (no server): clear hash and local state
       location.hash = "";
       activeState = null;
 
       eliminated = false;
-      eliminatedEl.style.display = "none";
+      elimOverlay.style.display = "none";
+      elimFrame.style.display = "none";
       setHealth(100);
-      healthSubEl.textContent = "Waiting…";
 
       if (stormCircle) { map.removeLayer(stormCircle); stormCircle = null; }
+      if (stormMask) { map.removeLayer(stormMask); stormMask = null; }
       if (startCenterMarker) { map.removeLayer(startCenterMarker); startCenterMarker = null; }
 
       chosenStartCenter = null;
       copyBtn.disabled = true;
       startBtn.disabled = true;
 
-      // Hide panel until center picked again
       panel.classList.add("hidden");
       showUiWrap.style.display = "none";
       pickOverlay.style.display = "flex";
-      statusEl.textContent = "Reset. Tap the map to pick a new center.";
+      statusSmall.textContent = "Reset. Tap the map to pick a new center.";
+      bsMain.textContent = "Waiting…";
+      bsSub.textContent = "";
+      bigStatus.classList.remove("danger");
     };
 
     // ============================================================
     // Initial mode selection
     // ============================================================
     if (loadFromHash()) {
-      // Guest mode: host UI hidden already
+      // guest mode
+      statusSmall.textContent = "";
     } else {
-      // Host setup mode
-      panel.classList.add("hidden");      // hidden until center chosen
+      // host setup mode
+      panel.classList.add("hidden");
       showUiWrap.style.display = "none";
-      pickOverlay.style.display = "flex"; // tell host to tap
-      statusEl.textContent = "Tap the map to pick start center.";
+      pickOverlay.style.display = "flex";
+      statusSmall.textContent = "Tap the map to pick start center.";
+      bsMain.textContent = "Waiting…";
+      bsSub.textContent = "";
+      bigStatus.classList.remove("danger");
     }
 
     window.addEventListener("hashchange", () => {
-      // If someone opens a new link while running, load it and hide host UI
+      // If a new link is loaded while open, switch to guest mode
       loadFromHash();
     });
 
     // ============================================================
-    // Main loop: render storm + health
+    // BIG STATUS logic
+    // ============================================================
+    function setBigStatus(main, sub="", danger=false){
+      bsMain.textContent = main;
+      bsSub.textContent = sub;
+      bigStatus.classList.toggle("danger", !!danger);
+    }
+
+    // ============================================================
+    // Main loop: storm + mask + health + status
     // ============================================================
     function loop() {
       const t = Date.now();
@@ -705,25 +856,39 @@
 
       if (activeState) {
         const ph = computePhaseAtTime(activeState, t);
-        if (ph?.center && typeof ph.radiusM === "number") drawStorm(ph.center, ph.radiusM);
+        if (ph?.center && typeof ph.radiusM === "number") {
+          drawStorm(ph.center, ph.radiusM);
+          updateStormMask(L.latLng(ph.center.lat, ph.center.lng), ph.radiusM);
+        }
+
+        const myPos = selfMarker ? selfMarker.getLatLng() : null;
+        const center = ph?.center ?? activeState.baseCenter;
+        const radiusM = ph?.radiusM ?? activeState.baseRadiusM;
+
+        const outside = (!eliminated) && isOutsideCircle(myPos, center, radiusM);
+
+        // Damage + big status
+        if (ph?.kind === "delay") {
+          const s = Math.ceil(ph.tLeftMs/1000);
+          setBigStatus("Storm is resting", `Moves in ${s}s`, false);
+        } else if (ph?.kind === "holding") {
+          const s = Math.ceil(ph.tLeftMs/1000);
+          setBigStatus("Storm is resting", `Moves in ${s}s`, false);
+        } else if (ph?.kind === "shrinking") {
+          setBigStatus("Storm is moving", "", false);
+        } else {
+          setBigStatus("Storm is moving", "", false);
+        }
 
         if (!eliminated) {
-          const myPos = selfMarker ? selfMarker.getLatLng() : null;
-          const center = ph?.center ?? activeState.baseCenter;
-          const radiusM = ph?.radiusM ?? activeState.baseRadiusM;
-
-          if (ph?.kind === "delay") {
-            healthSubEl.textContent = `Storm starts in ${Math.ceil(ph.tLeftMs/1000)}s (no damage).`;
-          } else {
-            const outside = isOutsideCircle(myPos, center, radiusM);
-            if (outside) {
-              setHealth(health - activeState.dps * dt);
-              healthSubEl.textContent = "OUTSIDE safe zone! Taking damage…";
-            } else {
-              healthSubEl.textContent = "Inside safe zone.";
-            }
+          if (ph?.kind !== "delay" && outside) {
+            setHealth(health - activeState.dps * dt);
+            setBigStatus("YOU ARE IN THE STORM!", "", true);
           }
         }
+      } else {
+        // no active game
+        setBigStatus("Waiting…", "", false);
       }
 
       requestAnimationFrame(loop);
