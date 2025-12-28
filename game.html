@@ -374,7 +374,19 @@
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-    map.setView([59.3293, 18.0686], 13);
+    map.setView([59.3293, 18.0686], 13); // fallback (will be overridden by GPS if available)
+
+		if (navigator.geolocation) {
+		  navigator.geolocation.getCurrentPosition(
+			(pos) => {
+			  const lat = pos.coords.latitude;
+			  const lng = pos.coords.longitude;
+			  map.setView([lat, lng], 16); // set initial view to your GPS position
+			},
+			() => {}, // keep fallback if denied/fails
+			{ enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+		  );
+		}
 
     // Local-only self marker (never shared)
     let selfMarker = null;
