@@ -502,6 +502,7 @@
         previewCircle = L.circle(centerLatLng, {
           radius: radiusM,
           weight: 2,
+		   color: "#f20c27",
           dashArray: "6 8",
           fillOpacity: 0.02,
           opacity: 0.75,
@@ -607,9 +608,17 @@
     }
 
     // New: next center can be anywhere within the old circle (relaxed)
-    function chooseNextCenterRelaxed(currentCenter, currentR, rng) {
-      return randomPointInDiskMeters(currentCenter, currentR, rng);
-    }
+    function chooseNextCenterRelaxed(currentCenter, currentR, rng, originCenter, originR) {
+	  // 1) propose inside current circle
+	  const candidate = randomPointInDiskMeters(currentCenter, currentR, rng);
+
+	  // 2) if it's inside the original circle, accept
+	  if (candidate.distanceTo(originCenter) <= originR) return candidate;
+
+	  // 3) otherwise, fall back to a point sampled directly inside the original circle
+	  // (keeps it simple + fully bounded)
+	  return randomPointInDiskMeters(originCenter, originR, rng);
+	}
 
     // ============================================================
     // State (v2): shrink-until-closed within a fixed game duration
@@ -641,7 +650,9 @@
         const rStart = circles[circles.length - 1].radiusM;
         const rEnd = Math.max(rMin, r0 * Math.exp(k * (movedSoFar + st.moveSec)));
 
-        const nextCenterLL = chooseNextCenterRelaxed(curCenter, rStart, rng);
+        const originCenter = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+		const nextCenterLL = chooseNextCenterRelaxed(curCenter, rStart, rng, originCenter, st.baseRadiusM);
+
         circles.push({ center: { lat: nextCenterLL.lat, lng: nextCenterLL.lng }, radiusM: rEnd });
 
         curCenter = nextCenterLL;
@@ -1135,12 +1146,12 @@
           updateStormMask(L.latLng(ph.center.lat, ph.center.lng), ph.radiusM);
         }
 
-        // show next circle during holding (Fortnite-style)
-        if (ph?.kind === "holding" && ph.nextCenter && typeof ph.nextRadiusM === "number") {
-          drawPreview(ph.nextCenter, ph.nextRadiusM);
-        } else {
-          clearPreview();
-        }
+        // show next circle during holding
+        if ((ph?.kind === "holding" || ph?.kind === "shrinking") && ph.nextCenter && typeof ph.nextRadiusM === "number") {
+		  drawPreview(ph.nextCenter, ph.nextRadiusM);
+		} else {
+		  clearPreview();
+		}
 
         const myPos = selfMarker ? selfMarker.getLatLng() : null;
 
