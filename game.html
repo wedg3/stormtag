@@ -115,14 +115,13 @@
     #pickOverlay .bubble b{ font-weight: 1000; }
 
     /* Host "Show UI" button wrapper (host-only) */
-#showUiWrap{
-  position: fixed;
-  left: 50%;
-  bottom: calc(170px + env(safe-area-inset-bottom)); /* slightly above bigStatus */
-  transform: translateX(-50%);
-  z-index: 1200;
-  display: none;
-}
+    #showUiWrap{
+      position:fixed;
+      left:10px;
+      bottom:10px;
+      z-index:1200;
+      display:none;
+    }
     #showUiBtn{
       padding:10px 12px;
       border-radius: 14px;
@@ -179,7 +178,7 @@
       width: min(520px, calc(100vw - 28px));
       background: rgba(0,0,0,.35);
       border: 1px solid rgba(255,255,255,.45);
-      border-radius: 16px;
+      border-radius: 4px;
       padding: 10px 12px;
       color: #fff;
       text-align: center;
@@ -254,8 +253,8 @@
       z-index: 1900;
       display: none;
       pointer-events: none;
-      border: 6px solid rgba(255, 50, 50, .55);
-      border-radius: 18px;
+      border: 6px solid rgba(255, 50, 50, .80);
+      border-radius: 4px;
     }
 	
 
@@ -267,8 +266,8 @@
       display: grid;
       place-items: center;
       border-radius: 14px;
-      background: rgba(0,0,0,.22);
-      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,100,.22);
+      border: 1px solid rgba(0,100,255,.25);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
