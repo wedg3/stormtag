@@ -274,7 +274,7 @@
       text-shadow: 0 2px 10px rgba(0,0,0,.6);
     }
 
-    /* Big status + "found" button dock (bottom center) */
+    /* Bottom dock holding buttons + status */
     #statusDock{
       position: fixed;
       left: 50%;
@@ -282,9 +282,8 @@
       transform: translateX(-50%);
       z-index: 1150;
       width: min(520px, calc(100vw - 28px));
-      pointer-events: none;    /* lets map work normally */
+      pointer-events: none;
     }
-
     #statusDock #bigStatus{
       position: relative;
       left: auto;
@@ -293,17 +292,15 @@
       width: 100%;
     }
 
-    /* Clickable button (override dock pointer-events) */
-    #foundBtn{
+    /* Two buttons at same height */
+    .dockBtn{
       pointer-events: auto;
       position: absolute;
-      right: 0;
       top: -78px;
       width: 62px;
       height: 62px;
       border-radius: 999px;
       border: 2px solid rgba(255,255,255,.95);
-      background: rgba(100,100,255, .90);
       color: #fff;
       font-weight: 1000;
       font-size: 10.5px;
@@ -314,13 +311,22 @@
       user-select: none;
       display: none;
     }
-    #foundBtn:hover{ filter: brightness(1.08); }
-    #foundBtn:active{ transform: translateY(1px); filter: brightness(.98); }
+    .dockBtn:hover{ filter: brightness(1.08); }
+    .dockBtn:active{ transform: translateY(1px); filter: brightness(.98); }
+
+    #notesBtn{
+      left: 0;
+      background: rgba(30,30,30,.85);
+    }
+    #foundBtn{
+      right: 0;
+      background: rgba(100,100,255,.90);
+    }
 
     /* ===========================
-       NOTEPAD MODAL (mobile friendly)
+       SEEKER NOTEPAD (list overlay)
        =========================== */
-    #notepadOverlay{
+    #notesOverlay{
       position: fixed;
       inset: 0;
       z-index: 3200;
@@ -331,93 +337,65 @@
       padding: 16px;
       box-sizing: border-box;
     }
-    #notepadCard{
-      width: min(360px, calc(100vw - 24px));
+    #notesCard{
+      width: min(380px, calc(100vw - 24px));
       max-height: min(78vh, 720px);
       overflow: hidden;
-      border-radius: 4px;
+      border-radius: 6px;
       border: 1px solid rgba(0,0,0,.25);
       box-shadow: 0 20px 50px rgba(0,0,0,.35);
-      background-color:white;
-       
+      
+      position: relative;
     }
-    /* left margin “notebook” */
-    #notepadCard::before{
+    #notesCard::before{
       content:"";
       position:absolute;
       top:0; bottom:0;
       left: 46px;
       width: 2px;
-      background: rgba(220,40,60,.35);
+	  
+      
     }
-    #notepadHeader{
+    #notesHeader{
       display:flex;
       align-items:center;
       justify-content: space-between;
       gap: 10px;
-      padding: 12px 12px 10px 12px;
+      padding: 6px 6px 6px 6px;
       background: rgba(255,255,255,.80);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
       border-bottom: 1px solid rgba(0,0,0,.10);
     }
-    #notepadTitle{
+    #notesTitle{
       font-weight: 1000;
       letter-spacing: .4px;
-      margin-left: 10px; /* away from edge */
+      margin-left: 10px;
     }
-    #notepadClose{
+    .closeBtn{
       flex: 0 0 auto;
       padding: 8px 10px;
       border-radius: 4px;
       border: 1px solid rgba(0,0,0,.22);
-      background: rgba(150,255,150,.9);
+      background: rgba(255,255,255,.9);
       color: #111;
       font-weight: 900;
       cursor: pointer;
     }
-    #notepadBody{
+    #notesBody{
       padding: 12px 12px 12px 12px;
-      display:flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: calc(min(78vh, 720px) - 52px);
+      max-height: calc(min(78vh, 720px) - 52px - 52px);
       overflow: auto;
       -webkit-overflow-scrolling: touch;
+	  background-color:#ffffff;
     }
-
-    #notepadForm{
-      display:flex;
-      gap: 8px;
-      align-items: center;
-      padding-left: 10px; /* align with notebook feel */
-    }
-    #foundName{
-      flex: 1;
-      font-size: 16px;
-      padding: 10px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(0,0,0,.22);
-      background: rgba(255,255,255,.92);
-      outline: none;
-    }
-    #addFound{
-      flex: 0 0 auto;
-      padding: 10px 12px;
-      border-radius: 4px;
-      border: 1px solid rgba(0,0,0,.22);
-      background: #111;
-      color: #fff;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    #notepadMeta{
+    #notesMeta{
       font-size: 12px;
       opacity: .85;
       padding-left: 10px;
+      margin-bottom: 6px;
+	  display:none;
     }
-
     #notesList{
       margin: 0;
       padding: 0 0 6px 0;
@@ -428,69 +406,132 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
-      padding: 10px 10px 10px 10px; /* indent past the red margin */
+      padding: 6px 6px 6px 6px;
       border-bottom: 1px dashed rgba(0,0,0,.10);
     }
     .noteText{
       white-space: pre-wrap;
-      line-height: 1;
+      line-height: 1.25;
       font-size: 14px;
       font-weight: 550;
-      color: #000;
-	  
-	  
-    }
-    .noteTime{
-      display:block;
-      margin-top: 4px;
-      font-size: 12px;
-      font-weight: 700;
-      opacity: .7;
-	  
-	  
+      color: #111;
     }
     .noteDelete{
       flex: 0 0 auto;
       border: 1px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.85);
-      color:#111;
+      background: rgba(0,0,0,0.8);
+      color:#fff;
       border-radius: 4px;
-      padding: 7px 9px;
+      padding: 1px 5px;
       font-weight: 900;
       cursor: pointer;
+	  vertical-align:middle;
     }
-
-    #notepadActions{
+    #notesActions{
       display:flex;
       justify-content: flex-end;
       gap: 8px;
       padding: 8px 12px 12px 12px;
       border-top: 1px solid rgba(0,0,0,.10);
-      background: rgba(255,255,255,.70);
+      background: rgba(255,255,255,0.8);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
     #clearNotes{
-      padding: 2px 10px;
+      padding: 4px 50px;
       border-radius: 4px;
       border: 1px solid rgba(0,0,0,.22);
-      background: rgba(200,0,0,.9);
+      background: rgba(255,40,40,.9);
       color: #fff;
       font-weight: 900;
       cursor: pointer;
-	  
+    }
+
+    /* Colored name/time (as requested earlier) */
+    .found-name{ font-weight: 800; color: red; }
+    .found-time{ font-weight: 800; color: red; }
+
+    /* ===========================
+       "I FOUND SOMEONE" (add overlay)
+       - textbox centered in top half
+       =========================== */
+    #foundOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 3300;
+      display: none;
+      background: rgba(0,0,0,.55);
+      box-sizing: border-box;
+      padding: 16px;
+    }
+    #foundOverlayInner{
+      position: absolute;
+      left: 50%;
+      top: 15vh;             /* top half */
+      transform: translateX(-50%);
+      width: min(380px, calc(100vw - 28px));
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.20);
+      border-radius: 6px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+    #foundHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 5px 12px;
+      border-bottom: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    #foundTitle{
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    #foundBody{
+      padding: 12px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #foundForm{
+      display:flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #foundName{
+      flex: 1;
+      font-size: 16px;
+      padding: 12px 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.22);
+      background: rgba(255,255,255,.95);
+      outline: none;
+    }
+    #addFound{
+      flex: 0 0 auto;
+      padding: 12px 14px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.22);
+      background: #111;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    #foundHint{
+      font-size: 12px;
+      opacity: .80;
+	  display:none;
     }
 
     @media (max-width: 420px){
-      #foundBtn{
-        width: 58px;
-        height: 58px;
-        top: -72px;
-        font-size: 10px;
-      }
-      #foundName{ font-size: 16px; }
+      .dockBtn{ width: 58px; height: 58px; top: -72px; font-size: 10px; }
+      #notesCard::before{ left: 42px; }
       .noteItem{ padding-left: 56px; }
-      #notepadCard::before{ left: 42px; }
+      #foundOverlayInner{ top: 18vh; }
     }
   </style>
 </head>
@@ -575,10 +616,14 @@
     </div>
   </div>
 
-  <!-- Big status + found button dock -->
+  <!-- Bottom dock: two buttons + status -->
   <div id="statusDock">
-    <button id="foundBtn" type="button" aria-label="Log that you found someone">
-      Seeker<br>notepad
+    <button id="notesBtn" class="dockBtn" type="button" aria-label="Open seeker notepad">
+      Seeker<br>Notepad
+    </button>
+
+    <button id="foundBtn" class="dockBtn" type="button" aria-label="Log that you found someone">
+      I found<br>someone
     </button>
 
     <div id="bigStatus">
@@ -587,7 +632,7 @@
     </div>
   </div>
 
-  <!-- Eliminated visuals (non-interactable) -->
+  <!-- Eliminated visuals -->
   <div id="elimFrame"></div>
   <div id="elimOverlay">
     <div class="textWrap">
@@ -596,27 +641,36 @@
     </div>
   </div>
 
-  <!-- Notepad overlay -->
-  <div id="notepadOverlay" role="dialog" aria-modal="true" aria-label="Found notes">
-    <div id="notepadCard">
-      <div id="notepadHeader">
-        <div id="notepadTitle">Seeker Notepad</div>
-        <button id="notepadClose" type="button">Close</button>
+  <!-- Seeker Notepad (LIST ONLY) -->
+  <div id="notesOverlay" role="dialog" aria-modal="true" aria-label="Seeker notepad">
+    <div id="notesCard">
+      <div id="notesHeader">
+        <div id="notesTitle">Seeker Notepad</div>
+        <button id="notesClose" class="closeBtn" type="button">Close</button>
       </div>
-
-      <div id="notepadBody">
-        <div id="notepadForm">
-          <input id="foundName" type="text" inputmode="text" autocomplete="off" placeholder="Name" />
-          <button id="addFound" type="button">Add</button>
-        </div>
-
-       
-
+      <div id="notesBody">
+        <div id="notesMeta">Entries are stored on this device (local).</div>
         <ul id="notesList"></ul>
       </div>
+      <div id="notesActions">
+        <button id="clearNotes" type="button">Clear all names</button>
+      </div>
+    </div>
+  </div>
 
-      <div id="notepadActions">
-        <button id="clearNotes" type="button">Clear all</button>
+  <!-- "I FOUND SOMEONE" (ADD ONLY) -->
+  <div id="foundOverlay" role="dialog" aria-modal="true" aria-label="Add found entry">
+    <div id="foundOverlayInner">
+      <div id="foundHeader">
+        <div id="foundTitle">Who did you find?</div>
+        <button id="foundClose" class="closeBtn" type="button">Close</button>
+      </div>
+      <div id="foundBody">
+        <div id="foundForm">
+          <input id="foundName" type="text" inputmode="text" autocomplete="off" placeholder="Name" />
+          <button id="addFound" type="button">Add to notepad</button>
+        </div>
+        <div id="foundHint">This creates a note like: “I found Alex at 14:32:10”.</div>
       </div>
     </div>
   </div>
@@ -626,7 +680,6 @@
     // Hash params
     // ============================================================
     let wakeLock = null;
-
     const v_holdRec = document.getElementById("v_holdRec");
 
     // ===============================
@@ -652,17 +705,24 @@
     function notesStorageKey(st){
       return `stormcatch_notes_${st.seed}_${st.startedAtMs}`;
     }
-
     function safeTrimName(s){
       return String(s || "").replace(/\s+/g, " ").trim();
+    }
+    function cryptoRandomId(){
+      try {
+        const a = new Uint32Array(2);
+        crypto.getRandomValues(a);
+        return (a[0].toString(16) + a[1].toString(16));
+      } catch {
+        return String(Math.random()).slice(2) + String(Date.now());
+      }
     }
 
     // State guards
     let lastPhaseKind = null;
 
     function recommendedHoldSecFromRadius(radiusM){
-      // 1km -> 300s (5 min)
-      return Math.round((radiusM / 1000) * 300);
+      return Math.round((radiusM / 1000) * 300); // 1km -> 300s
     }
 
     async function requestWakeLock() {
@@ -670,17 +730,14 @@
         if ("wakeLock" in navigator) {
           wakeLock = await navigator.wakeLock.request("screen");
         }
-      } catch (e) {
-        // silently fail
-      }
+      } catch (e) {}
     }
 
     function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
-    // Option A: rest time decreases with radius.
     function holdSecForRadius(baseHoldSec, r, r0){
       const raw = baseHoldSec * (r / Math.max(1, r0));
-      return clamp(Math.round(raw), 3, Math.round(baseHoldSec)); // min 3s, max base
+      return clamp(Math.round(raw), 3, Math.round(baseHoldSec));
     }
 
     function releaseWakeLock() {
@@ -693,11 +750,8 @@
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && activeState) {
-        requestWakeLock();
-      } else {
-        releaseWakeLock();
-      }
+      if (document.visibilityState === "visible" && activeState) requestWakeLock();
+      else releaseWakeLock();
     });
 
     function pickupStorageKey(st){
@@ -803,7 +857,7 @@
     }
 
     // ============================================================
-    // Blue "storm" mask outside the safe circle (polygon with a hole)
+    // Blue "storm" mask outside safe circle
     // ============================================================
     let stormMask = null;
 
@@ -895,7 +949,6 @@
 
     function chooseNextCenterReachable(currentCenter, currentR, rng, originCenter, originR) {
       const MAX_TRIES = 60;
-
       for (let i = 0; i < MAX_TRIES; i++) {
         const cand = randomPointInDiskMeters(currentCenter, currentR, rng);
         if (cand.distanceTo(originCenter) <= originR) return cand;
@@ -911,7 +964,6 @@
 
     function buildSeededCircles(st) {
       const rng = mulberry32(st.seed);
-
       const playSec = Math.max(0, st.gameDurationSec - st.delaySec);
 
       function totalPlayTimeForMoves(movesCount){
@@ -933,15 +985,8 @@
       let moves = Math.max(1, Math.ceil(playSec / Math.max(1, (st.holdSec + st.moveSec))));
       let tEst = totalPlayTimeForMoves(moves);
 
-      while (tEst < playSec * 0.98) {
-        moves++;
-        tEst = totalPlayTimeForMoves(moves);
-        if (moves > 2000) break;
-      }
-      while (tEst > playSec * 1.02 && moves > 1) {
-        moves--;
-        tEst = totalPlayTimeForMoves(moves);
-      }
+      while (tEst < playSec * 0.98) { moves++; tEst = totalPlayTimeForMoves(moves); if (moves > 2000) break; }
+      while (tEst > playSec * 1.02 && moves > 1) { moves--; tEst = totalPlayTimeForMoves(moves); }
 
       const totalMoveSec = moves * st.moveSec;
       const r0 = st.baseRadiusM;
@@ -1055,7 +1100,7 @@
     }
 
     // ============================================================
-    // Health + elimination time
+    // Health + elimination
     // ============================================================
     let health = 100;
     let eliminated = false;
@@ -1083,7 +1128,6 @@
           `<br><span class="elimTime">Eliminated at ${tStr}</span>` +
           `<br><span class="elimTime">Storms survived: ${stormsSurvived}</span>`;
 
-        
         elimOverlay.style.display = "flex";
         elimFrame.style.display = "block";
       }
@@ -1109,7 +1153,7 @@
     }
 
     // ============================================================
-    // Pickups (seeded) – local collection (honesty mode)
+    // Pickups
     // ============================================================
     let pickupMarkers = new Map();
     let collectedPickupIds = new Set();
@@ -1125,7 +1169,6 @@
 
     function buildSeededPickups(st) {
       const rng = mulberry32(st.seed ^ 0xA53C9E17);
-
       const count = Math.max(6, Math.floor(st.gameDurationSec / 45));
       const values = [20, 50, 100];
       const pickups = [];
@@ -1135,15 +1178,10 @@
         const earliest = st.delaySec + 5;
         const latest = Math.max(earliest + 5, st.gameDurationSec - 5);
         const spawnSec = earliest + Math.floor(rng() * (latest - earliest));
-
-        const spawnAtMs =
-          (i < 3)
-            ? st.startedAtMs + st.delaySec * 1000
-            : st.startedAtMs + spawnSec * 1000;
+        const spawnAtMs = (i < 3) ? (st.startedAtMs + st.delaySec * 1000) : (st.startedAtMs + spawnSec * 1000);
 
         const pLL = randomPointInDiskMeters(centerLL, st.baseRadiusM, rng);
         const val = values[Math.floor(rng() * values.length)];
-
         pickups.push({ id: `p${i}`, lat: pLL.lat, lng: pLL.lng, value: val, spawnAtMs });
       }
       return pickups.sort((a,b) => a.spawnAtMs - b.spawnAtMs);
@@ -1157,7 +1195,6 @@
 
     function updatePickups(st, nowMs, myPos) {
       if (!st?.pickups) return;
-
       const pickupRadiusM = 35;
 
       for (const p of st.pickups) {
@@ -1186,7 +1223,6 @@
     // UI refs (host controls)
     // ============================================================
     const panel = document.getElementById("panel");
-
     const showUiWrap = document.getElementById("showUiWrap");
     const showUiBtn = document.getElementById("showUiBtn");
     const hideUiBtn = document.getElementById("hideUiBtn");
@@ -1230,11 +1266,15 @@
       }
     }
 
+    function isGuestLinkPresent() {
+      const p = parseHashParams();
+      return !!p.v;
+    }
+
     function enableHostPanel(){
       if (!isHostLocal && isGuestLinkPresent()) return;
       panel.classList.remove("hidden");
       showUiWrap.style.display = "none";
-
       if (!activeState) {
         startBtn.disabled = !chosenStartCenter;
         previewStartCircle();
@@ -1256,11 +1296,7 @@
       });
     }
 
-    function isGuestLinkPresent() {
-      const p = parseHashParams();
-      return !!p.v;
-    }
-
+    // Host chooses center by tapping map
     map.on("click", (e) => {
       if (activeState) return;
       if (isGuestLinkPresent()) return;
@@ -1268,28 +1304,28 @@
     });
 
     // ============================================================
-    // Notepad UI + persistence
+    // Notes overlays (list-only + add-only)
     // ============================================================
+    const notesBtn = document.getElementById("notesBtn");
     const foundBtn = document.getElementById("foundBtn");
-    const notepadOverlay = document.getElementById("notepadOverlay");
-    const notepadClose = document.getElementById("notepadClose");
-    const foundNameEl = document.getElementById("foundName");
-    const addFoundBtn = document.getElementById("addFound");
+
+    const notesOverlay = document.getElementById("notesOverlay");
+    const notesClose = document.getElementById("notesClose");
     const notesListEl = document.getElementById("notesList");
     const clearNotesBtn = document.getElementById("clearNotes");
 
-    function openNotepad(){
-      if (!activeState) return;
-      notepadOverlay.style.display = "flex";
-      // focus after a frame (mobile)
-      requestAnimationFrame(() => {
-        foundNameEl.focus({ preventScroll: true });
-      });
-      renderNotes();
-    }
+    const foundOverlay = document.getElementById("foundOverlay");
+    const foundClose = document.getElementById("foundClose");
+    const foundNameEl = document.getElementById("foundName");
+    const addFoundBtn = document.getElementById("addFound");
 
-    function closeNotepad(){
-      notepadOverlay.style.display = "none";
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function loadNotesFromStorage(){
@@ -1320,26 +1356,12 @@
       } catch {}
     }
 
-    function cryptoRandomId(){
-      try {
-        const a = new Uint32Array(2);
-        crypto.getRandomValues(a);
-        return (a[0].toString(16) + a[1].toString(16));
-      } catch {
-        return String(Math.random()).slice(2) + String(Date.now());
-      }
-    }
-
     function addNote(name){
       const nm = safeTrimName(name);
       if (!nm) return;
 
       const now = Date.now();
-      foundNotes.unshift({
-        id: cryptoRandomId(),
-        name: nm,
-        atMs: now
-      });
+      foundNotes.unshift({ id: cryptoRandomId(), name: nm, atMs: now });
       saveNotesToStorage();
       renderNotes();
     }
@@ -1363,7 +1385,7 @@
       if (foundNotes.length === 0) {
         const li = document.createElement("li");
         li.className = "noteItem";
-        li.innerHTML = `<div class="noteText" style="font-weight:650;opacity:.40;">Write the name of someone you have found.</div>`;
+        li.innerHTML = `<div class="noteText" style="font-weight:650;opacity:.75;">No entries yet.</div>`;
         notesListEl.appendChild(li);
         return;
       }
@@ -1377,7 +1399,7 @@
 
         const left = document.createElement("div");
         left.className = "noteText";
-       left.innerHTML = `I found <b><span style='color: red;'>${escapeHtml(n.name)}</span></b> at <b>${tStr}</b>`;
+        left.innerHTML = `I found <span class="found-name">${escapeHtml(n.name)}</span> at <span class="found-time">${tStr}</span>`;
 
         const del = document.createElement("button");
         del.className = "noteDelete";
@@ -1391,45 +1413,50 @@
       }
     }
 
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    function openNotes(){
+      if (!activeState) return;
+      renderNotes();
+      notesOverlay.style.display = "flex";
+    }
+    function closeNotes(){
+      notesOverlay.style.display = "none";
     }
 
-    foundBtn.addEventListener("click", () => {
-       openNotepad();
-    });
+    function openFound(){
+      if (!activeState) return;
+      foundOverlay.style.display = "block";
+      requestAnimationFrame(() => foundNameEl.focus({ preventScroll: true }));
+    }
+    function closeFound(){
+      foundOverlay.style.display = "none";
+    }
 
-    notepadClose.addEventListener("click", closeNotepad);
-    notepadOverlay.addEventListener("click", (e) => {
-      if (e.target === notepadOverlay) closeNotepad();
-    });
+    notesBtn.addEventListener("click", openNotes);
+    foundBtn.addEventListener("click", openFound);
+
+    notesClose.addEventListener("click", closeNotes);
+    notesOverlay.addEventListener("click", (e) => { if (e.target === notesOverlay) closeNotes(); });
+
+    foundClose.addEventListener("click", closeFound);
+    foundOverlay.addEventListener("click", (e) => { if (e.target === foundOverlay) closeFound(); });
 
     addFoundBtn.addEventListener("click", () => {
       addNote(foundNameEl.value);
       foundNameEl.value = "";
-      foundNameEl.focus({ preventScroll: true });
+      closeFound(); // fast flow
     });
 
     foundNameEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        addFoundBtn.click();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        closeNotepad();
-      }
+      if (e.key === "Enter") { e.preventDefault(); addFoundBtn.click(); }
+      if (e.key === "Escape") { e.preventDefault(); closeFound(); }
     });
 
     clearNotesBtn.addEventListener("click", () => {
-  const ok = confirm("Are you sure you want to remove all names from your notebook?");
-  if (!ok) return;
-  clearAllNotes();
-});
+      const ok = confirm("Clear all notes? This cannot be undone.");
+      if (!ok) return;
+      clearAllNotes();
+    });
+
     // ============================================================
     // Load from hash (guest mode)
     // ============================================================
@@ -1488,8 +1515,10 @@
 
       // Restore notes
       loadNotesFromStorage();
+      renderNotes();
 
-      // Show "I found someone" button in-game
+      // Show BOTH buttons for everyone (including eliminated)
+      notesBtn.style.display = "block";
       foundBtn.style.display = "block";
 
       // Restore locally collected pickups
@@ -1506,7 +1535,6 @@
       updateStormMask(L.latLng(baseCenter.lat, baseCenter.lng), baseRadiusM);
       clearPreview();
 
-      // reset local health + elim visuals
       eliminated = false;
       eliminatedAt = null;
       elimOverlay.style.display = "none";
@@ -1514,7 +1542,6 @@
       setHealth(100);
 
       clearPickups();
-
       return true;
     }
 
@@ -1551,7 +1578,7 @@
       // Load state locally as host
       loadFromHash();
 
-      // ✅ REMOVE HOST START CENTER MARKER
+      // Remove host start center marker
       if (startCenterMarker) {
         map.removeLayer(startCenterMarker);
         startCenterMarker = null;
@@ -1597,16 +1624,14 @@
       releaseWakeLock();
       radiusSelectEl.style.display = "";
 
-      // clear notes in-memory (doesn't delete previous game keys)
-      foundNotes = [];
-      closeNotepad();
+      closeNotes();
+      closeFound();
 
       eliminated = false;
       eliminatedAt = null;
       elimOverlay.style.display = "none";
       elimFrame.style.display = "none";
       setHealth(100);
-      elimSmall.textContent = "You are now eliminated";
 
       if (stormCircle) { map.removeLayer(stormCircle); stormCircle = null; }
       if (stormMask) { map.removeLayer(stormMask); stormMask = null; }
@@ -1622,27 +1647,13 @@
 
       panel.classList.add("hidden");
       showUiWrap.style.display = "none";
-      foundBtn.style.display = "none";
-      statusSmall.textContent = "Reset. Tap the map to pick a new center.";
 
+      notesBtn.style.display = "none";
+      foundBtn.style.display = "none";
+
+      statusSmall.textContent = "Reset. Tap the map to pick a new center.";
       setBigStatus("Waiting…", "", false);
     };
-
-    // ============================================================
-    // Host panel open/close
-    // ============================================================
-    function enableHostPanel(){
-      if (!isHostLocal && isGuestLinkPresent()) return;
-      panel.classList.remove("hidden");
-      showUiWrap.style.display = "none";
-      if (!activeState) {
-        startBtn.disabled = !chosenStartCenter;
-        previewStartCircle();
-      }
-    }
-
-    hideUiBtn.onclick = hideHostPanel;
-    showUiBtn.onclick = () => { enableHostPanel(); };
 
     // ============================================================
     // Initial mode selection
@@ -1657,12 +1668,10 @@
       setBigStatus("Waiting…", "", false);
     }
 
-    window.addEventListener("hashchange", () => {
-      loadFromHash();
-    });
+    window.addEventListener("hashchange", () => { loadFromHash(); });
 
     // ============================================================
-    // Main loop
+    // Loop
     // ============================================================
     function loop() {
       const t = Date.now();
@@ -1681,11 +1690,8 @@
         // storms survived count
         if (activeState && ph.kind === "holding" && lastPhaseKind === "shrinking") {
           stormsSurvived++;
-          try {
-            localStorage.setItem(stormsStorageKey(activeState), String(stormsSurvived));
-          } catch {}
+          try { localStorage.setItem(stormsStorageKey(activeState), String(stormsSurvived)); } catch {}
         }
-
         lastPhaseKind = ph.kind;
 
         if (ph?.center && typeof ph.radiusM === "number") {
@@ -1693,7 +1699,6 @@
           updateStormMask(L.latLng(ph.center.lat, ph.center.lng), ph.radiusM);
         }
 
-        // show next circle during holding/shrinking
         if ((ph?.kind === "holding" || ph?.kind === "shrinking") && ph.nextCenter && typeof ph.nextRadiusM === "number") {
           drawPreview(ph.nextCenter, ph.nextRadiusM);
         } else {
@@ -1701,10 +1706,8 @@
         }
 
         const myPos = selfMarker ? selfMarker.getLatLng() : null;
-
         updatePickups(activeState, t, myPos);
 
-        // Big status text
         if (ph.kind === "delay") {
           const s = Math.ceil(ph.tLeftMs / 1000);
           setBigStatus("Time until game starts", `${s}s`, false);
@@ -1724,7 +1727,6 @@
           setBigStatus("Game ended", "Meet at the center and compare notes.", false);
         }
 
-        // Damage (no damage during delay; no damage after eliminated)
         if (!eliminated && ph.kind !== "delay" && ph.center && typeof ph.radiusM === "number") {
           const outside = isOutsideCircle(myPos, ph.center, ph.radiusM);
           if (outside) {
