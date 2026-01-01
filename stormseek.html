@@ -1,0 +1,1742 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Storm Hide & Seek</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    html, body { height:100%; margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    #map { height:100%; }
+
+    /* Host panel (host-only) */
+    #panel{
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100vw - 14px);
+      max-width: 380px;
+      background: rgba(230, 230, 230,1);
+      border: 1px solid rgba(0,0,0,.18);
+      border-radius: 4px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+      backdrop-filter: blur(1px);
+      z-index: 10001;
+      -webkit-backdrop-filter: blur(1px);
+      font-weight:400;
+      box-sizing: border-box;
+    }
+    #panel.hidden { display:none; }
+
+    #panel h2{ margin:0 0 8px; font-size: 14px; place-items: center; text-align: center; }
+    .note{ font-size:12px; opacity:.95; margin-bottom:8px; line-height:1.3; padding-bottom:15px; }
+    .warning{color:#d11b1b}
+    .warningthin{color:#d11b1b; font-weight:200;}
+    .note2{ font-size:10px; opacity:.95; place-items: center; text-align: center;}
+
+    .row{ margin:10px 0; }
+    .rowHeader{
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+      margin-top: 3px;
+      font-weight:700;
+    }
+    .rowHeader .label{ font-size: 12px; color:#222; }
+    .rowHeader .val{ font-size: 12px; color:#111; font-weight: 900; }
+
+    input[type="range"]{ width: 100%; accent-color: #111; }
+
+    .btnRow{ display:flex; gap:8px; margin-top: 8px; }
+    button{
+      flex:1;
+      padding: 10px 10px;
+      border:0;
+      border-radius: 4px;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 900;
+    }
+    button.secondary{
+      background: rgba(255,255,255,.75);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    button.hidebutton{
+      background: rgba(100,100,255,.55);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.25);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
+
+    #statusSmall{
+      margin-top: 8px;
+      font-size: 12px;
+      color: #000;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      opacity: .9;
+    }
+
+    .radiusselect{
+      position: absolute;
+      left: 50%;
+      bottom: 130px;
+      width:300px;
+      transform: translateX(-50%);
+      z-index: 999;
+      background: rgba(240,240,240,.55);
+      border: 1px solid rgba(255,255,255,.45);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      padding:5px 10px;
+      box-sizing: border-box;
+    }
+
+    /* Host "Show UI" button wrapper (host-only) */
+    #showUiWrap{
+      position: absolute;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      z-index: 1200;
+      display: none;
+    }
+    #showUiBtn{
+      padding:4px 10px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.75);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    /* HEALTH HUD (top right) */
+    #healthHud{
+      position: fixed;
+      right: 10px;
+      top: 10px;
+      z-index: 1100;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 4px;
+      padding: 4px 8px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      user-select: none;
+      pointer-events: none;
+    }
+    #heartIcon{
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+      opacity: .95;
+    }
+    #healthValue{
+      font-size: 18px;
+      font-weight: 1000;
+      letter-spacing: .5px;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    /* BIG STATUS (bottom center) */
+    #bigStatus{
+      position: fixed;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: calc(100vw - 28px);
+      max-width: 520px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 4px;
+      z-index: 1100;
+      padding: 10px 12px;
+      color: #fff;
+      text-align: center;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      pointer-events: none;
+      user-select: none;
+      box-sizing: border-box;
+    }
+    #bigStatus .main{
+      font-size: 18px;
+      font-weight: 1000;
+      letter-spacing: .6px;
+      text-transform: none;
+    }
+    #bigStatus .sub{
+      margin-top: 2px;
+      font-size: 13px;
+      opacity: .9;
+      letter-spacing: .2px;
+      min-height: 1.1em;
+    }
+    #bigStatus.danger{
+      color: #ffd6d6;
+      background: rgba(120,0,0,.58);
+      border-color: rgba(255,120,120,1);
+    }
+
+    /* ELIMINATED overlay (non-interactable, map still pans) */
+    #elimOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      user-select: none;
+    }
+    #elimOverlay .textWrap{
+      text-align: center;
+      padding: 18px;
+      width: min(680px, calc(100vw - 36px));
+    }
+    #elimOverlay .big{
+      font-size: clamp(34px, 8vw, 68px);
+      font-weight: 1000;
+      letter-spacing: 1px;
+      color: rgba(255, 60, 60, .50);
+      text-shadow: 0 10px 40px rgba(0,0,0,.35);
+    }
+    #elimOverlay .small{
+      margin-top: 8px;
+      font-size: clamp(14px, 3.3vw, 18px);
+      letter-spacing: .4px;
+      line-height: 1.25;
+      color: black;
+    }
+    #elimOverlay .elimTime{
+      display: block;
+      margin-top: 6px;
+      font-size: 0.9em;
+      opacity: 1;
+    }
+    #elimFrame{
+      position: fixed;
+      inset: 8px;
+      z-index: 1900;
+      display: none;
+      pointer-events: none;
+      border: 6px solid rgba(255, 50, 50, .80);
+      border-radius: 4px;
+    }
+
+    /* Pickup icon */
+    .pickup {
+      width: 38px;
+      height: 38px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: rgba(0,0,100,.22);
+      border: 1px solid rgba(0,100,255,.25);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .pickup img{
+      width: 26px; height: 26px;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
+      opacity: .95;
+    }
+    .pickup .val{
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 12px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    }
+
+    /* Big status + "found" button dock (bottom center) */
+    #statusDock{
+      position: fixed;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 1150;
+      width: min(520px, calc(100vw - 28px));
+      pointer-events: none;    /* lets map work normally */
+    }
+
+    #statusDock #bigStatus{
+      position: relative;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      width: 100%;
+    }
+
+    /* Clickable button (override dock pointer-events) */
+    #foundBtn{
+      pointer-events: auto;
+      position: absolute;
+      right: 0;
+      top: -78px;
+      width: 62px;
+      height: 62px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.95);
+      background: rgba(100,100,255, .90);
+      color: #fff;
+      font-weight: 1000;
+      font-size: 10.5px;
+      line-height: 1.05;
+      padding: 6px;
+      cursor: pointer;
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      user-select: none;
+      display: none;
+    }
+    #foundBtn:hover{ filter: brightness(1.08); }
+    #foundBtn:active{ transform: translateY(1px); filter: brightness(.98); }
+
+    /* ===========================
+       NOTEPAD MODAL (mobile friendly)
+       =========================== */
+    #notepadOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 3200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.55);
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    #notepadCard{
+      width: min(360px, calc(100vw - 24px));
+      max-height: min(78vh, 720px);
+      overflow: hidden;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.25);
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+      background-color:white;
+       
+    }
+    /* left margin “notebook” */
+    #notepadCard::before{
+      content:"";
+      position:absolute;
+      top:0; bottom:0;
+      left: 46px;
+      width: 2px;
+      background: rgba(220,40,60,.35);
+    }
+    #notepadHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px 10px 12px;
+      background: rgba(255,255,255,.80);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(0,0,0,.10);
+    }
+    #notepadTitle{
+      font-weight: 1000;
+      letter-spacing: .4px;
+      margin-left: 10px; /* away from edge */
+    }
+    #notepadClose{
+      flex: 0 0 auto;
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.22);
+      background: rgba(150,255,150,.9);
+      color: #111;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    #notepadBody{
+      padding: 12px 12px 12px 12px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: calc(min(78vh, 720px) - 52px);
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #notepadForm{
+      display:flex;
+      gap: 8px;
+      align-items: center;
+      padding-left: 10px; /* align with notebook feel */
+    }
+    #foundName{
+      flex: 1;
+      font-size: 16px;
+      padding: 10px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.22);
+      background: rgba(255,255,255,.92);
+      outline: none;
+    }
+    #addFound{
+      flex: 0 0 auto;
+      padding: 10px 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.22);
+      background: #111;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    #notepadMeta{
+      font-size: 12px;
+      opacity: .85;
+      padding-left: 10px;
+    }
+
+    #notesList{
+      margin: 0;
+      padding: 0 0 6px 0;
+      list-style: none;
+    }
+    .noteItem{
+      display:flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 10px 10px 10px; /* indent past the red margin */
+      border-bottom: 1px dashed rgba(0,0,0,.10);
+    }
+    .noteText{
+      white-space: pre-wrap;
+      line-height: 1;
+      font-size: 14px;
+      font-weight: 550;
+      color: #000;
+	  
+	  
+    }
+    .noteTime{
+      display:block;
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: .7;
+	  
+	  
+    }
+    .noteDelete{
+      flex: 0 0 auto;
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.85);
+      color:#111;
+      border-radius: 4px;
+      padding: 7px 9px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    #notepadActions{
+      display:flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 12px 12px 12px;
+      border-top: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.70);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    #clearNotes{
+      padding: 2px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.22);
+      background: rgba(200,0,0,.9);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+	  
+    }
+
+    @media (max-width: 420px){
+      #foundBtn{
+        width: 58px;
+        height: 58px;
+        top: -72px;
+        font-size: 10px;
+      }
+      #foundName{ font-size: 16px; }
+      .noteItem{ padding-left: 56px; }
+      #notepadCard::before{ left: 42px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <!-- Host-only controls -->
+  <div id="panel" class="hidden">
+    <h2>- Game Settings -</h2>
+    <div class="note">
+      Press <b>"Hide this menu"</b> to adjust the Game Area or when playing the game.
+      <span class="warning">Play in a safe area!</span> Avoid major roads or railways.
+      When finished, hit START and share your game.
+      <p>These are recommended settings for a relatively fast game. Increase game duration or rest time to make it easier. The rest time suggestion is based on your area size.</p>
+      <p><i><span class="warning">Tip:</span> Try the game with your settings before playing with others.</i></p>
+    </div>
+
+    <div class="row">
+      <div class="rowHeader"><div class="label">Time before game starts (s)</div><div class="val" id="v_delay"></div></div>
+      <input id="delaySec" type="range" min="0" max="600" step="10" value="100" />
+    </div>
+
+    <div class="row">
+      <div class="rowHeader">
+        <div class="label">Rest time at start:&nbsp;&nbsp;<span class="warning"><span id="v_holdRec" style="opacity:.85;font-weight:300;"></span></span></div>
+        <div class="val" id="v_hold"></div>
+      </div>
+      <input id="holdTime" type="range" min="0" max="1000" step="5" value="300" />
+    </div>
+
+    <div class="row">
+      <div class="rowHeader"><div class="label">Game duration <span class="warningthin">(shorter game = harder)</span></div><div class="val" id="v_gameMin"></div></div>
+      <input id="gameMin" type="range" min="5" max="120" step="5" value="20" />
+    </div>
+
+    <div class="row">
+      <div class="rowHeader"><div class="label">Storm damage per second</div><div class="val" id="v_dps"></div></div>
+      <input id="dps" type="range" min="1" max="10" step="1" value="2" />
+    </div>
+
+    <div class="btnRow">
+      <button id="resetBtn" class="secondary">Reset</button>
+      <button id="startBtn" disabled>START</button>
+    </div>
+
+    <div class="btnRow">
+      <button id="copyBtn" class="secondary" disabled>Copy Link to game</button>
+      <button id="shareBtn" class="secondary" disabled>Share Game</button>
+    </div>
+
+    <div class="btnRow">
+      <button id="hideUiBtn" class="hidebutton">Hide this menu</button>
+    </div>
+
+    <div id="statusSmall"></div>
+  </div>
+
+  <!-- Host-only: show UI button -->
+  <div id="showUiWrap">
+    <button id="showUiBtn">Show Menu</button>
+  </div>
+
+  <!-- Health HUD -->
+  <div id="healthHud">
+    <img id="heartIcon" src="assets/heart.png" alt="heart" />
+    <div id="healthValue">100</div>
+  </div>
+
+  <div id="radiusSelect" class="radiusselect">
+    <div class="note2">
+      <div>1. Point and adjust the area to play in.</div>
+    </div>
+
+    <div class="rowHeader">
+      <div class="label">Game area (radius)</div>
+      <div class="val" id="v_radius"></div>
+    </div>
+    <input id="startRadius" type="range" min="100" max="5000" step="50" value="1000" />
+    <div class="note2">
+      <div>2. Click <b>"Show Menu"</b> at the top when done.</div>
+    </div>
+  </div>
+
+  <!-- Big status + found button dock -->
+  <div id="statusDock">
+    <button id="foundBtn" type="button" aria-label="Log that you found someone">
+      Seeker<br>notepad
+    </button>
+
+    <div id="bigStatus">
+      <div class="main" id="bsMain">Waiting…</div>
+      <div class="sub" id="bsSub"></div>
+    </div>
+  </div>
+
+  <!-- Eliminated visuals (non-interactable) -->
+  <div id="elimFrame"></div>
+  <div id="elimOverlay">
+    <div class="textWrap">
+      <div class="big">ELIMINATED</div>
+      <div class="small" id="elimSmall">You are now eliminated</div>
+    </div>
+  </div>
+
+  <!-- Notepad overlay -->
+  <div id="notepadOverlay" role="dialog" aria-modal="true" aria-label="Found notes">
+    <div id="notepadCard">
+      <div id="notepadHeader">
+        <div id="notepadTitle">Seeker Notepad</div>
+        <button id="notepadClose" type="button">Close</button>
+      </div>
+
+      <div id="notepadBody">
+        <div id="notepadForm">
+          <input id="foundName" type="text" inputmode="text" autocomplete="off" placeholder="Name" />
+          <button id="addFound" type="button">Add</button>
+        </div>
+
+       
+
+        <ul id="notesList"></ul>
+      </div>
+
+      <div id="notepadActions">
+        <button id="clearNotes" type="button">Clear all</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // Hash params
+    // ============================================================
+    let wakeLock = null;
+
+    const v_holdRec = document.getElementById("v_holdRec");
+
+    // ===============================
+    // SOUND SETUP (TEMP FILENAMES)
+    // ===============================
+    const sndStormMove = new Audio("assets/storm_move.mp3");     // storm starts moving
+    const sndEliminated = new Audio("assets/eliminated.mp3");    // eliminated
+    sndStormMove.preload = "auto";
+    sndEliminated.preload = "auto";
+
+    // ===============================
+    // STORMS SURVIVED (LOCAL)
+    // ===============================
+    let stormsSurvived = 0;
+    function stormsStorageKey(st){
+      return `stormcatch_storms_${st.seed}_${st.startedAtMs}`;
+    }
+
+    // ===============================
+    // FOUND NOTES (LOCAL)
+    // ===============================
+    let foundNotes = []; // {id, name, atMs}
+    function notesStorageKey(st){
+      return `stormcatch_notes_${st.seed}_${st.startedAtMs}`;
+    }
+
+    function safeTrimName(s){
+      return String(s || "").replace(/\s+/g, " ").trim();
+    }
+
+    // State guards
+    let lastPhaseKind = null;
+
+    function recommendedHoldSecFromRadius(radiusM){
+      // 1km -> 300s (5 min)
+      return Math.round((radiusM / 1000) * 300);
+    }
+
+    async function requestWakeLock() {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLock = await navigator.wakeLock.request("screen");
+        }
+      } catch (e) {
+        // silently fail
+      }
+    }
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    // Option A: rest time decreases with radius.
+    function holdSecForRadius(baseHoldSec, r, r0){
+      const raw = baseHoldSec * (r / Math.max(1, r0));
+      return clamp(Math.round(raw), 3, Math.round(baseHoldSec)); // min 3s, max base
+    }
+
+    function releaseWakeLock() {
+      try {
+        if (wakeLock) {
+          wakeLock.release();
+          wakeLock = null;
+        }
+      } catch {}
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && activeState) {
+        requestWakeLock();
+      } else {
+        releaseWakeLock();
+      }
+    });
+
+    function pickupStorageKey(st){
+      return `stormcatch_pickups_${st.seed}_${st.startedAtMs}`;
+    }
+
+    function parseHashParams() {
+      const h = (location.hash || "").replace(/^#/, "").trim();
+      const out = {};
+      if (!h) return out;
+      for (const part of h.split("&")) {
+        const [k, v] = part.split("=");
+        if (!k) continue;
+        out[decodeURIComponent(k)] = decodeURIComponent(v || "");
+      }
+      return out;
+    }
+    function setHashParams(params) {
+      const parts = [];
+      for (const [k, v] of Object.entries(params)) {
+        parts.push(encodeURIComponent(k) + "=" + encodeURIComponent(String(v)));
+      }
+      location.hash = parts.join("&");
+    }
+
+    // ============================================================
+    // Seeded RNG (Mulberry32)
+    // ============================================================
+    function mulberry32(seed) {
+      let t = seed >>> 0;
+      return function() {
+        t += 0x6D2B79F5;
+        let x = Math.imul(t ^ (t >>> 15), 1 | t);
+        x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    // ============================================================
+    // Map
+    // ============================================================
+    const map = L.map('map', { zoomControl: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    map.setView([62.17211, 14.92897], 12);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 14),
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    }
+
+    // Local-only self marker
+    let selfMarker = null;
+    function setSelfMarker(latlng){
+      if (!selfMarker) selfMarker = L.circleMarker(latlng, { radius: 7, weight: 2 }).addTo(map);
+      else selfMarker.setLatLng(latlng);
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(
+        (pos) => setSelfMarker([pos.coords.latitude, pos.coords.longitude]),
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 1000, timeout: 8000 }
+      );
+    }
+
+    // Storm circle (current)
+    let stormCircle = null;
+    function drawStorm(centerLatLng, radiusMeters) {
+      if (!stormCircle) {
+        stormCircle = L.circle(centerLatLng, { radius: radiusMeters, weight: 3, fillOpacity: 0.08, interactive: false }).addTo(map);
+      } else {
+        stormCircle.setLatLng(centerLatLng);
+        stormCircle.setRadius(radiusMeters);
+      }
+    }
+
+    // Preview circle (next target)
+    let previewCircle = null;
+    function drawPreview(centerLatLng, radiusM) {
+      if (!previewCircle) {
+        previewCircle = L.circle(centerLatLng, {
+          radius: radiusM,
+          weight: 2,
+          color: "#f20c27",
+          dashArray: "6 8",
+          fillOpacity: 0.02,
+          opacity: 0.75,
+          interactive: false
+        }).addTo(map);
+      } else {
+        previewCircle.setLatLng(centerLatLng);
+        previewCircle.setRadius(radiusM);
+      }
+    }
+    function clearPreview() {
+      if (previewCircle) { map.removeLayer(previewCircle); previewCircle = null; }
+    }
+
+    // ============================================================
+    // Blue "storm" mask outside the safe circle (polygon with a hole)
+    // ============================================================
+    let stormMask = null;
+
+    function destinationPoint(lat, lng, bearingDeg, distanceM) {
+      const R = 6371000;
+      const brng = bearingDeg * Math.PI/180;
+      const lat1 = lat * Math.PI/180;
+      const lon1 = lng * Math.PI/180;
+      const dr = distanceM / R;
+
+      const lat2 = Math.asin(Math.sin(lat1)*Math.cos(dr) + Math.cos(lat1)*Math.sin(dr)*Math.cos(brng));
+      const lon2 = lon1 + Math.atan2(Math.sin(brng)*Math.sin(dr)*Math.cos(lat1), Math.cos(dr) - Math.sin(lat1)*Math.sin(lat2));
+      return [lat2 * 180/Math.PI, lon2 * 180/Math.PI];
+    }
+
+    function circleRingLatLngs(center, radiusM, points=96) {
+      const ring = [];
+      for (let i=0; i<points; i++) {
+        const b = (i / points) * 360;
+        const p = destinationPoint(center.lat, center.lng, b, radiusM);
+        ring.push([p[0], p[1]]);
+      }
+      return ring;
+    }
+
+    function updateStormMask(center, radiusM) {
+      const outer = [
+        [-85, -180],
+        [-85,  180],
+        [ 85,  180],
+        [ 85, -180]
+      ];
+      const inner = circleRingLatLngs(center, radiusM, 96);
+
+      if (!stormMask) {
+        stormMask = L.polygon([outer, inner], {
+          stroke: false,
+          fill: true,
+          fillColor: "#2a7fff",
+          fillOpacity: 0.40,
+          interactive: false
+        }).addTo(map);
+      } else {
+        stormMask.setLatLngs([outer, inner]);
+      }
+    }
+
+    // ============================================================
+    // Host start center marker
+    // ============================================================
+    let startCenterMarker = null;
+    let chosenStartCenter = null;
+
+    function setStartCenter(latlng){
+      chosenStartCenter = latlng;
+
+      if (!startCenterMarker) {
+        startCenterMarker = L.marker(latlng, { draggable: true }).addTo(map);
+        startCenterMarker.on("dragend", () => {
+          chosenStartCenter = startCenterMarker.getLatLng();
+          previewStartCircle();
+          startBtn.disabled = !chosenStartCenter;
+        });
+      } else startCenterMarker.setLatLng(latlng);
+
+      previewStartCircle();
+      startBtn.disabled = !chosenStartCenter;
+      showUiWrap.style.display = "block";
+    }
+
+    // ============================================================
+    // Deterministic geometry helpers
+    // ============================================================
+    function randomPointInDiskMeters(center, maxR, rng) {
+      const u = rng();
+      const v = rng();
+      const r = Math.sqrt(u) * maxR;
+      const theta = 2 * Math.PI * v;
+
+      const east = r * Math.cos(theta);
+      const north = r * Math.sin(theta);
+
+      const lat = center.lat;
+      const metersPerDegLat = 111320;
+      const metersPerDegLng = 111320 * Math.cos(lat * Math.PI/180);
+
+      return L.latLng(lat + (north / metersPerDegLat), center.lng + (east / metersPerDegLng));
+    }
+
+    function chooseNextCenterReachable(currentCenter, currentR, rng, originCenter, originR) {
+      const MAX_TRIES = 60;
+
+      for (let i = 0; i < MAX_TRIES; i++) {
+        const cand = randomPointInDiskMeters(currentCenter, currentR, rng);
+        if (cand.distanceTo(originCenter) <= originR) return cand;
+      }
+      return L.latLng(currentCenter.lat, currentCenter.lng);
+    }
+
+    // ============================================================
+    // State (v2)
+    // ============================================================
+    let activeState = null;
+    let isHostLocal = false;
+
+    function buildSeededCircles(st) {
+      const rng = mulberry32(st.seed);
+
+      const playSec = Math.max(0, st.gameDurationSec - st.delaySec);
+
+      function totalPlayTimeForMoves(movesCount){
+        const totalMoveSec = movesCount * st.moveSec;
+        const r0 = st.baseRadiusM;
+        const rMin = Math.max(2, st.minRadiusM);
+        const k = Math.log(rMin / r0) / Math.max(1, totalMoveSec);
+
+        let tSum = 0;
+        for (let i = 0; i < movesCount; i++){
+          const movedSoFar = i * st.moveSec;
+          const rHere = Math.max(rMin, r0 * Math.exp(k * movedSoFar));
+          const holdHere = holdSecForRadius(st.holdSec, rHere, r0);
+          tSum += holdHere + st.moveSec;
+        }
+        return tSum;
+      }
+
+      let moves = Math.max(1, Math.ceil(playSec / Math.max(1, (st.holdSec + st.moveSec))));
+      let tEst = totalPlayTimeForMoves(moves);
+
+      while (tEst < playSec * 0.98) {
+        moves++;
+        tEst = totalPlayTimeForMoves(moves);
+        if (moves > 2000) break;
+      }
+      while (tEst > playSec * 1.02 && moves > 1) {
+        moves--;
+        tEst = totalPlayTimeForMoves(moves);
+      }
+
+      const totalMoveSec = moves * st.moveSec;
+      const r0 = st.baseRadiusM;
+      const rMin = Math.max(2, st.minRadiusM);
+      const k = Math.log(rMin / r0) / totalMoveSec;
+
+      let curCenter = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+
+      const circles = [];
+      circles.push({ center: { lat: curCenter.lat, lng: curCenter.lng }, radiusM: r0 });
+
+      let movedSoFar = 0;
+      for (let i = 0; i < moves; i++) {
+        const rStart = circles[circles.length - 1].radiusM;
+        const rEnd = Math.max(rMin, r0 * Math.exp(k * (movedSoFar + st.moveSec)));
+
+        const originCenter = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+        const nextCenterLL = chooseNextCenterReachable(curCenter, rStart, rng, originCenter, st.baseRadiusM);
+
+        circles.push({ center: { lat: nextCenterLL.lat, lng: nextCenterLL.lng }, radiusM: rEnd });
+
+        curCenter = nextCenterLL;
+        movedSoFar += st.moveSec;
+      }
+      return circles;
+    }
+
+    function computePhaseAtTimeV2(st, tMs) {
+      const start = st.startedAtMs;
+      const delayEnd = start + st.delaySec*1000;
+      const endAt = start + st.gameDurationSec*1000;
+
+      if (tMs < start) return { kind: "prestart" };
+      if (tMs >= endAt) {
+        const last = st.circles[st.circles.length - 1];
+        return { kind: "finished", center: last.center, radiusM: last.radiusM, endAtMs: endAt };
+      }
+
+      if (tMs < delayEnd) {
+        const c0 = st.circles[0];
+        return { kind: "delay", center: c0.center, radiusM: c0.radiusM, tLeftMs: delayEnd - tMs, endAtMs: endAt };
+      }
+
+      const elapsed = tMs - delayEnd;
+      const moveMs = st.moveSec * 1000;
+
+      const nominalHoldMs = st.holdSec * 1000;
+      const nominalCycleMs = nominalHoldMs + moveMs;
+
+      let idx = Math.floor(elapsed / Math.max(1, nominalCycleMs));
+      idx = clamp(idx, 0, st.circles.length - 2);
+
+      let tCursor = 0;
+      for (let i = 0; i < idx; i++) {
+        const rHere = st.circles[i].radiusM;
+        const holdHereMs = holdSecForRadius(st.holdSec, rHere, st.baseRadiusM) * 1000;
+        tCursor += holdHereMs + moveMs;
+      }
+
+      while (idx > 0) {
+        const prevR = st.circles[idx - 1].radiusM;
+        const prevHoldMs = holdSecForRadius(st.holdSec, prevR, st.baseRadiusM) * 1000;
+        const prevSegMs = prevHoldMs + moveMs;
+        if (tCursor <= elapsed) break;
+        idx--;
+        tCursor -= prevSegMs;
+      }
+
+      while (idx < st.circles.length - 2) {
+        const rHere = st.circles[idx].radiusM;
+        const holdHereMs = holdSecForRadius(st.holdSec, rHere, st.baseRadiusM) * 1000;
+        const segMs = holdHereMs + moveMs;
+        if (tCursor + segMs > elapsed) break;
+        tCursor += segMs;
+        idx++;
+      }
+
+      const within = elapsed - tCursor;
+
+      const from = st.circles[idx];
+      const to   = st.circles[idx + 1];
+
+      const holdMs = holdSecForRadius(st.holdSec, from.radiusM, st.baseRadiusM) * 1000;
+
+      if (within < holdMs) {
+        return {
+          kind: "holding",
+          center: from.center,
+          radiusM: from.radiusM,
+          nextCenter: to.center,
+          nextRadiusM: to.radiusM,
+          tLeftMs: holdMs - within,
+          endAtMs: endAt
+        };
+      }
+
+      const a = Math.min(1, Math.max(0, (within - holdMs) / Math.max(1, moveMs)));
+
+      return {
+        kind: "shrinking",
+        center: {
+          lat: from.center.lat + (to.center.lat - from.center.lat) * a,
+          lng: from.center.lng + (to.center.lng - from.center.lng) * a
+        },
+        radiusM: from.radiusM + (to.radiusM - from.radiusM) * a,
+        nextCenter: to.center,
+        nextRadiusM: to.radiusM,
+        tLeftMs: moveMs - (within - holdMs),
+        endAtMs: endAt
+      };
+    }
+
+    // ============================================================
+    // Health + elimination time
+    // ============================================================
+    let health = 100;
+    let eliminated = false;
+    let eliminatedAt = null;
+    let lastTickMs = Date.now();
+
+    const healthValueEl = document.getElementById("healthValue");
+    const elimOverlay = document.getElementById("elimOverlay");
+    const elimFrame = document.getElementById("elimFrame");
+    const elimSmall = document.getElementById("elimSmall");
+
+    function setHealth(val){
+      health = val;
+      healthValueEl.textContent = String(Math.round(health));
+      if (health <= 0 && !eliminated) {
+        eliminated = true;
+        eliminatedAt = new Date();
+
+        sndEliminated.currentTime = 0;
+        sndEliminated.play().catch(() => {});
+
+        const tStr = eliminatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        elimSmall.innerHTML =
+          `ELIMINATED BY STORM` +
+          `<br><span class="elimTime">Eliminated at ${tStr}</span>` +
+          `<br><span class="elimTime">Storms survived: ${stormsSurvived}</span>`;
+
+        
+        elimOverlay.style.display = "flex";
+        elimFrame.style.display = "block";
+      }
+    }
+
+    function isOutsideCircle(selfLatLng, center, radiusM) {
+      if (!selfLatLng) return false;
+      const c = L.latLng(center.lat, center.lng);
+      return selfLatLng.distanceTo(c) > radiusM;
+    }
+
+    // ============================================================
+    // Big status
+    // ============================================================
+    const bsMain = document.getElementById("bsMain");
+    const bsSub  = document.getElementById("bsSub");
+    const bigStatus = document.getElementById("bigStatus");
+
+    function setBigStatus(main, sub="", danger=false){
+      bsMain.textContent = main;
+      bsSub.textContent = sub;
+      bigStatus.classList.toggle("danger", !!danger);
+    }
+
+    // ============================================================
+    // Pickups (seeded) – local collection (honesty mode)
+    // ============================================================
+    let pickupMarkers = new Map();
+    let collectedPickupIds = new Set();
+
+    function makePickupIcon(value) {
+      const html = `
+        <div class="pickup">
+          <img src="assets/heart.png" alt="heart">
+          <div class="val">${value}</div>
+        </div>`;
+      return L.divIcon({ html, className: "", iconSize: [38,38], iconAnchor:[19,19] });
+    }
+
+    function buildSeededPickups(st) {
+      const rng = mulberry32(st.seed ^ 0xA53C9E17);
+
+      const count = Math.max(6, Math.floor(st.gameDurationSec / 45));
+      const values = [20, 50, 100];
+      const pickups = [];
+      const centerLL = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+
+      for (let i = 0; i < count; i++) {
+        const earliest = st.delaySec + 5;
+        const latest = Math.max(earliest + 5, st.gameDurationSec - 5);
+        const spawnSec = earliest + Math.floor(rng() * (latest - earliest));
+
+        const spawnAtMs =
+          (i < 3)
+            ? st.startedAtMs + st.delaySec * 1000
+            : st.startedAtMs + spawnSec * 1000;
+
+        const pLL = randomPointInDiskMeters(centerLL, st.baseRadiusM, rng);
+        const val = values[Math.floor(rng() * values.length)];
+
+        pickups.push({ id: `p${i}`, lat: pLL.lat, lng: pLL.lng, value: val, spawnAtMs });
+      }
+      return pickups.sort((a,b) => a.spawnAtMs - b.spawnAtMs);
+    }
+
+    function clearPickups() {
+      for (const m of pickupMarkers.values()) map.removeLayer(m);
+      pickupMarkers.clear();
+      collectedPickupIds.clear();
+    }
+
+    function updatePickups(st, nowMs, myPos) {
+      if (!st?.pickups) return;
+
+      const pickupRadiusM = 35;
+
+      for (const p of st.pickups) {
+        if (collectedPickupIds.has(p.id)) continue;
+        if (nowMs < p.spawnAtMs) continue;
+
+        if (!pickupMarkers.has(p.id)) {
+          const m = L.marker([p.lat, p.lng], { icon: makePickupIcon(p.value), interactive: false });
+          m.addTo(map);
+          pickupMarkers.set(p.id, m);
+        }
+
+        if (myPos) {
+          const d = myPos.distanceTo(L.latLng(p.lat, p.lng));
+          if (d <= pickupRadiusM) {
+            collectedPickupIds.add(p.id);
+            const m = pickupMarkers.get(p.id);
+            if (m) { map.removeLayer(m); pickupMarkers.delete(p.id); }
+            setHealth(health + p.value);
+          }
+        }
+      }
+    }
+
+    // ============================================================
+    // UI refs (host controls)
+    // ============================================================
+    const panel = document.getElementById("panel");
+
+    const showUiWrap = document.getElementById("showUiWrap");
+    const showUiBtn = document.getElementById("showUiBtn");
+    const hideUiBtn = document.getElementById("hideUiBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const startBtn = document.getElementById("startBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const shareBtn = document.getElementById("shareBtn");
+    const statusSmall = document.getElementById("statusSmall");
+
+    const startRadiusEl = document.getElementById("startRadius");
+    const delaySecEl = document.getElementById("delaySec");
+    const holdTimeEl = document.getElementById("holdTime");
+    const gameMinEl = document.getElementById("gameMin");
+    const dpsEl = document.getElementById("dps");
+
+    const v_radius = document.getElementById("v_radius");
+    const v_delay  = document.getElementById("v_delay");
+    const v_hold   = document.getElementById("v_hold");
+    const v_gameMin = document.getElementById("v_gameMin");
+    const v_dps    = document.getElementById("v_dps");
+
+    const radiusSelectEl = document.getElementById("radiusSelect");
+
+    function reflectSliderValues(){
+      v_radius.textContent = `${startRadiusEl.value} m`;
+      v_delay.textContent  = `${delaySecEl.value} s`;
+      v_hold.textContent   = `${holdTimeEl.value} s`;
+      v_gameMin.textContent = `${gameMinEl.value} min`;
+      v_dps.textContent    = `${dpsEl.value} /s`;
+
+      const rec = recommendedHoldSecFromRadius(Number(startRadiusEl.value));
+      v_holdRec.textContent = `(suggestion: ${Math.round(rec)} seconds)`;
+    }
+    reflectSliderValues();
+
+    function previewStartCircle(){
+      const r = Number(startRadiusEl.value);
+      if (chosenStartCenter && r > 0) {
+        drawStorm(chosenStartCenter, r);
+        updateStormMask(chosenStartCenter, r);
+      }
+    }
+
+    function enableHostPanel(){
+      if (!isHostLocal && isGuestLinkPresent()) return;
+      panel.classList.remove("hidden");
+      showUiWrap.style.display = "none";
+
+      if (!activeState) {
+        startBtn.disabled = !chosenStartCenter;
+        previewStartCircle();
+      }
+    }
+
+    function hideHostPanel(){
+      panel.classList.add("hidden");
+      showUiWrap.style.display = "block";
+    }
+
+    hideUiBtn.onclick = hideHostPanel;
+    showUiBtn.onclick = () => enableHostPanel();
+
+    for (const el of [startRadiusEl, delaySecEl, holdTimeEl, gameMinEl, dpsEl]) {
+      el.addEventListener("input", () => {
+        reflectSliderValues();
+        if (!activeState) previewStartCircle();
+      });
+    }
+
+    function isGuestLinkPresent() {
+      const p = parseHashParams();
+      return !!p.v;
+    }
+
+    map.on("click", (e) => {
+      if (activeState) return;
+      if (isGuestLinkPresent()) return;
+      setStartCenter(e.latlng);
+    });
+
+    // ============================================================
+    // Notepad UI + persistence
+    // ============================================================
+    const foundBtn = document.getElementById("foundBtn");
+    const notepadOverlay = document.getElementById("notepadOverlay");
+    const notepadClose = document.getElementById("notepadClose");
+    const foundNameEl = document.getElementById("foundName");
+    const addFoundBtn = document.getElementById("addFound");
+    const notesListEl = document.getElementById("notesList");
+    const clearNotesBtn = document.getElementById("clearNotes");
+
+    function openNotepad(){
+      if (!activeState) return;
+      notepadOverlay.style.display = "flex";
+      // focus after a frame (mobile)
+      requestAnimationFrame(() => {
+        foundNameEl.focus({ preventScroll: true });
+      });
+      renderNotes();
+    }
+
+    function closeNotepad(){
+      notepadOverlay.style.display = "none";
+    }
+
+    function loadNotesFromStorage(){
+      foundNotes = [];
+      if (!activeState) return;
+      try {
+        const raw = localStorage.getItem(notesStorageKey(activeState));
+        const arr = JSON.parse(raw || "[]");
+        if (Array.isArray(arr)) {
+          foundNotes = arr
+            .filter(x => x && typeof x === "object")
+            .map(x => ({
+              id: String(x.id || cryptoRandomId()),
+              name: safeTrimName(x.name || ""),
+              atMs: Number(x.atMs) || Date.now()
+            }))
+            .filter(x => x.name.length > 0);
+        }
+      } catch {
+        foundNotes = [];
+      }
+    }
+
+    function saveNotesToStorage(){
+      if (!activeState) return;
+      try {
+        localStorage.setItem(notesStorageKey(activeState), JSON.stringify(foundNotes));
+      } catch {}
+    }
+
+    function cryptoRandomId(){
+      try {
+        const a = new Uint32Array(2);
+        crypto.getRandomValues(a);
+        return (a[0].toString(16) + a[1].toString(16));
+      } catch {
+        return String(Math.random()).slice(2) + String(Date.now());
+      }
+    }
+
+    function addNote(name){
+      const nm = safeTrimName(name);
+      if (!nm) return;
+
+      const now = Date.now();
+      foundNotes.unshift({
+        id: cryptoRandomId(),
+        name: nm,
+        atMs: now
+      });
+      saveNotesToStorage();
+      renderNotes();
+    }
+
+    function deleteNote(id){
+      foundNotes = foundNotes.filter(n => n.id !== id);
+      saveNotesToStorage();
+      renderNotes();
+    }
+
+    function clearAllNotes(){
+      foundNotes = [];
+      saveNotesToStorage();
+      renderNotes();
+    }
+
+    function renderNotes(){
+      notesListEl.innerHTML = "";
+      if (!activeState) return;
+
+      if (foundNotes.length === 0) {
+        const li = document.createElement("li");
+        li.className = "noteItem";
+        li.innerHTML = `<div class="noteText" style="font-weight:650;opacity:.40;">Write the name of someone you have found.</div>`;
+        notesListEl.appendChild(li);
+        return;
+      }
+
+      for (const n of foundNotes) {
+        const at = new Date(n.atMs);
+        const tStr = at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+        const li = document.createElement("li");
+        li.className = "noteItem";
+
+        const left = document.createElement("div");
+        left.className = "noteText";
+       left.innerHTML = `I found <b><span style='color: red;'>${escapeHtml(n.name)}</span></b> at <b>${tStr}</b>`;
+
+        const del = document.createElement("button");
+        del.className = "noteDelete";
+        del.type = "button";
+        del.textContent = "✕";
+        del.addEventListener("click", () => deleteNote(n.id));
+
+        li.appendChild(left);
+        li.appendChild(del);
+        notesListEl.appendChild(li);
+      }
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    foundBtn.addEventListener("click", () => {
+       openNotepad();
+    });
+
+    notepadClose.addEventListener("click", closeNotepad);
+    notepadOverlay.addEventListener("click", (e) => {
+      if (e.target === notepadOverlay) closeNotepad();
+    });
+
+    addFoundBtn.addEventListener("click", () => {
+      addNote(foundNameEl.value);
+      foundNameEl.value = "";
+      foundNameEl.focus({ preventScroll: true });
+    });
+
+    foundNameEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addFoundBtn.click();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        closeNotepad();
+      }
+    });
+
+    clearNotesBtn.addEventListener("click", () => {
+  const ok = confirm("Are you sure you want to remove all names from your notebook?");
+  if (!ok) return;
+  clearAllNotes();
+});
+    // ============================================================
+    // Load from hash (guest mode)
+    // ============================================================
+    function loadFromHash() {
+      const p = parseHashParams();
+      if (!p || !p.v) return false;
+
+      const v = Number(p.v);
+      if (v !== 2) return false;
+
+      if (!isHostLocal) {
+        panel.classList.add("hidden");
+        showUiWrap.style.display = "none";
+        radiusSelectEl.style.display = "none";
+      }
+
+      const baseCenter = { lat: Number(p.lat), lng: Number(p.lng) };
+      const baseRadiusM = Number(p.r);
+      const delaySec = Number(p.delay);
+      const holdSec = Number(p.hold);
+      const gameMin = Number(p.gameMin);
+      const dps = Number(p.dps);
+      const seed = Number(p.seed) >>> 0;
+      const startedAtMs = Number(p.t0);
+
+      if (![baseCenter.lat, baseCenter.lng, baseRadiusM, seed, startedAtMs, delaySec, holdSec, gameMin, dps].every(Number.isFinite)) {
+        return false;
+      }
+
+      activeState = {
+        version: 2,
+        seed,
+        startedAtMs,
+        baseCenter,
+        baseRadiusM,
+        delaySec,
+        holdSec,
+        gameDurationSec: Math.max(60, gameMin * 60),
+        dps,
+        minRadiusM: 8,
+        moveSec: 20,
+        circles: [],
+        pickups: []
+      };
+
+      activeState.circles = buildSeededCircles(activeState);
+      activeState.pickups = buildSeededPickups(activeState);
+
+      // Restore storms survived
+      try {
+        const saved = localStorage.getItem(stormsStorageKey(activeState));
+        stormsSurvived = saved ? Number(saved) || 0 : 0;
+      } catch {
+        stormsSurvived = 0;
+      }
+
+      // Restore notes
+      loadNotesFromStorage();
+
+      // Show "I found someone" button in-game
+      foundBtn.style.display = "block";
+
+      // Restore locally collected pickups
+      try {
+        const key = pickupStorageKey(activeState);
+        const saved = JSON.parse(localStorage.getItem(key) || "[]");
+        collectedPickupIds = new Set(saved);
+      } catch {
+        collectedPickupIds = new Set();
+      }
+
+      map.setView([baseCenter.lat, baseCenter.lng], 14);
+      drawStorm(baseCenter, baseRadiusM);
+      updateStormMask(L.latLng(baseCenter.lat, baseCenter.lng), baseRadiusM);
+      clearPreview();
+
+      // reset local health + elim visuals
+      eliminated = false;
+      eliminatedAt = null;
+      elimOverlay.style.display = "none";
+      elimFrame.style.display = "none";
+      setHealth(100);
+
+      clearPickups();
+
+      return true;
+    }
+
+    // ============================================================
+    // Host Start -> generates seeded link (v2)
+    // ============================================================
+    startBtn.onclick = () => {
+      if (!chosenStartCenter) return;
+
+      isHostLocal = true;
+      radiusSelectEl.style.display = "none";
+
+      const seed = (crypto?.getRandomValues)
+        ? (crypto.getRandomValues(new Uint32Array(1))[0] >>> 0)
+        : (Math.floor(Math.random() * 2147483647) >>> 0);
+
+      const startedAtMs = Date.now();
+
+      const params = {
+        v: 2,
+        lat: chosenStartCenter.lat.toFixed(6),
+        lng: chosenStartCenter.lng.toFixed(6),
+        r: Math.round(Number(startRadiusEl.value)),
+        delay: Math.round(Number(delaySecEl.value)),
+        hold: Math.round(Number(holdTimeEl.value)),
+        gameMin: Math.round(Number(gameMinEl.value)),
+        dps: Math.round(Number(dpsEl.value)),
+        seed: seed,
+        t0: startedAtMs
+      };
+
+      setHashParams(params);
+
+      // Load state locally as host
+      loadFromHash();
+
+      // ✅ REMOVE HOST START CENTER MARKER
+      if (startCenterMarker) {
+        map.removeLayer(startCenterMarker);
+        startCenterMarker = null;
+      }
+
+      copyBtn.disabled = false;
+      shareBtn.disabled = false;
+      statusSmall.textContent = "Started. Copy and share the link.";
+    };
+
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(location.href);
+        statusSmall.textContent = "Copied share link ✅";
+      } catch {
+        prompt("Copy this link:", location.href);
+      }
+    };
+
+    shareBtn.onclick = async () => {
+      const msg = `Come play Storm Hide & Seek with me:\n${location.href}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ text: msg });
+          statusSmall.textContent = "Share opened ✅";
+          return;
+        } catch {}
+      }
+
+      try {
+        await navigator.clipboard.writeText(msg);
+        statusSmall.textContent = "Share message copied ✅";
+      } catch {
+        prompt("Copy this message:", msg);
+      }
+    };
+
+    resetBtn.onclick = () => {
+      location.hash = "";
+      activeState = null;
+      isHostLocal = false;
+      releaseWakeLock();
+      radiusSelectEl.style.display = "";
+
+      // clear notes in-memory (doesn't delete previous game keys)
+      foundNotes = [];
+      closeNotepad();
+
+      eliminated = false;
+      eliminatedAt = null;
+      elimOverlay.style.display = "none";
+      elimFrame.style.display = "none";
+      setHealth(100);
+      elimSmall.textContent = "You are now eliminated";
+
+      if (stormCircle) { map.removeLayer(stormCircle); stormCircle = null; }
+      if (stormMask) { map.removeLayer(stormMask); stormMask = null; }
+      clearPreview();
+      clearPickups();
+
+      if (startCenterMarker) { map.removeLayer(startCenterMarker); startCenterMarker = null; }
+      chosenStartCenter = null;
+
+      copyBtn.disabled = true;
+      shareBtn.disabled = true;
+      startBtn.disabled = true;
+
+      panel.classList.add("hidden");
+      showUiWrap.style.display = "none";
+      foundBtn.style.display = "none";
+      statusSmall.textContent = "Reset. Tap the map to pick a new center.";
+
+      setBigStatus("Waiting…", "", false);
+    };
+
+    // ============================================================
+    // Host panel open/close
+    // ============================================================
+    function enableHostPanel(){
+      if (!isHostLocal && isGuestLinkPresent()) return;
+      panel.classList.remove("hidden");
+      showUiWrap.style.display = "none";
+      if (!activeState) {
+        startBtn.disabled = !chosenStartCenter;
+        previewStartCircle();
+      }
+    }
+
+    hideUiBtn.onclick = hideHostPanel;
+    showUiBtn.onclick = () => { enableHostPanel(); };
+
+    // ============================================================
+    // Initial mode selection
+    // ============================================================
+    if (loadFromHash()) {
+      if (!isHostLocal) statusSmall.textContent = "";
+      setBigStatus("Waiting…", "", false);
+    } else {
+      panel.classList.add("hidden");
+      showUiWrap.style.display = "none";
+      statusSmall.textContent = "Tap the map to pick start center.";
+      setBigStatus("Waiting…", "", false);
+    }
+
+    window.addEventListener("hashchange", () => {
+      loadFromHash();
+    });
+
+    // ============================================================
+    // Main loop
+    // ============================================================
+    function loop() {
+      const t = Date.now();
+      const dt = Math.max(0, (t - lastTickMs) / 1000);
+      lastTickMs = t;
+
+      if (activeState) {
+        const ph = computePhaseAtTimeV2(activeState, t);
+
+        // storm starts moving sound
+        if (lastPhaseKind === "holding" && ph.kind === "shrinking") {
+          sndStormMove.currentTime = 0;
+          sndStormMove.play().catch(() => {});
+        }
+
+        // storms survived count
+        if (activeState && ph.kind === "holding" && lastPhaseKind === "shrinking") {
+          stormsSurvived++;
+          try {
+            localStorage.setItem(stormsStorageKey(activeState), String(stormsSurvived));
+          } catch {}
+        }
+
+        lastPhaseKind = ph.kind;
+
+        if (ph?.center && typeof ph.radiusM === "number") {
+          drawStorm(ph.center, ph.radiusM);
+          updateStormMask(L.latLng(ph.center.lat, ph.center.lng), ph.radiusM);
+        }
+
+        // show next circle during holding/shrinking
+        if ((ph?.kind === "holding" || ph?.kind === "shrinking") && ph.nextCenter && typeof ph.nextRadiusM === "number") {
+          drawPreview(ph.nextCenter, ph.nextRadiusM);
+        } else {
+          clearPreview();
+        }
+
+        const myPos = selfMarker ? selfMarker.getLatLng() : null;
+
+        updatePickups(activeState, t, myPos);
+
+        // Big status text
+        if (ph.kind === "delay") {
+          const s = Math.ceil(ph.tLeftMs / 1000);
+          setBigStatus("Time until game starts", `${s}s`, false);
+
+        } else if (ph.kind === "holding") {
+          const s = Math.ceil(ph.tLeftMs / 1000);
+          setBigStatus("Storm is resting", `Moves in ${s}s`, false);
+
+        } else if (ph.kind === "shrinking") {
+          if (activeState && ph.radiusM <= activeState.minRadiusM + 0.5) {
+            setBigStatus("Storm is resting", "", false);
+          } else {
+            setBigStatus("Storm is moving", "", false);
+          }
+
+        } else if (ph.kind === "finished") {
+          setBigStatus("Game ended", "Meet at the center and compare notes.", false);
+        }
+
+        // Damage (no damage during delay; no damage after eliminated)
+        if (!eliminated && ph.kind !== "delay" && ph.center && typeof ph.radiusM === "number") {
+          const outside = isOutsideCircle(myPos, ph.center, ph.radiusM);
+          if (outside) {
+            setBigStatus("YOU ARE IN THE STORM!", "", true);
+            setHealth(health - activeState.dps * dt);
+          }
+        }
+      }
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
