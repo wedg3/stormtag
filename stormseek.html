@@ -811,10 +811,20 @@
 
     // Local-only self marker
     let selfMarker = null;
-    function setSelfMarker(latlng){
-      if (!selfMarker) selfMarker = L.circleMarker(latlng, { radius: 7, weight: 2 }).addTo(map);
-      else selfMarker.setLatLng(latlng);
-    }
+function setSelfMarker(latlng){
+  const style = {
+    radius: 10,
+    color: "#990000",     // outline
+    weight: 3,
+    fill: true,
+    fillColor: "#00c8ff", // red fill
+    fillOpacity: 1,
+    opacity: 1
+  };
+
+  if (!selfMarker) selfMarker = L.circleMarker(latlng, style).addTo(map);
+  else selfMarker.setLatLng(latlng);
+}
     if (navigator.geolocation) {
       navigator.geolocation.watchPosition(
         (pos) => setSelfMarker([pos.coords.latitude, pos.coords.longitude]),
@@ -1738,3 +1748,4 @@
   </script>
 </body>
 </html>
+
