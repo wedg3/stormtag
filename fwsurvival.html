@@ -1,0 +1,1528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Falling World</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    html, body { height:100%; margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    #map { height:100%; }
+
+    /* Main host panel (timings + share) */
+    #panel{
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100vw - 14px);
+      max-width: 420px;
+
+      background: rgba(230, 230, 230,1);
+      border: 1px solid rgba(0,0,0,.18);
+      border-radius: 4px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+      backdrop-filter: blur(1px);
+      z-index: 10001;
+      -webkit-backdrop-filter: blur(1px);
+      font-weight:400;
+    }
+    #panel.hidden { display:none; }
+
+    #panel h2{ margin:0 0 8px; font-size: 14px; text-align:center; }
+
+    .note{ font-size:12px; opacity:.95; margin-bottom:8px; line-height:1.3; padding-bottom:12px; }
+    .warning{color:#d11b1b}
+
+    .row{ margin:10px 0; }
+    .rowHeader{
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+      margin-top: 3px;
+      font-weight:700;
+    }
+    .rowHeader .label{ font-size: 12px; color:#222; }
+    .rowHeader .val{ font-size: 12px; color:#111; font-weight: 900; }
+
+    input[type="range"]{ width: 100%; accent-color: #111; }
+
+    .btnRow{ display:flex; gap:8px; margin-top: 8px; }
+    button{
+      flex:1;
+      padding: 10px 10px;
+      border:0;
+      border-radius: 4px;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 900;
+    }
+    button.secondary{
+      background: rgba(255,255,255,.75);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    button.hidebutton{
+      background: rgba(100,100,255,.55);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.25);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
+
+    #statusSmall{
+      margin-top: 8px;
+      font-size: 12px;
+      color: #000;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      opacity: .9;
+    }
+
+    /* Area/Grid control bar (outside panel) */
+    #areaBar{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: max(14px, env(safe-area-inset-bottom));
+      z-index: 1200;
+
+      width: calc(100vw - 24px);
+      max-width: 760px;
+
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(0,0,0,.22);
+      border-radius: 4px;
+      padding: 10px 12px;
+      box-shadow: 0 12px 34px rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+    }
+    #areaBar .titleRow{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    #areaBar .titleRow .t{
+      font-weight: 1000;
+      letter-spacing: .4px;
+      font-size: 12px;
+      color: #111;
+      text-transform: uppercase;
+    }
+    #areaBar .titleRow .hint{
+      font-size: 12px;
+      color: rgba(0,0,0,.72);
+    }
+    #areaBar .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+    }
+    @media (max-width: 720px){
+      #areaBar .grid{ grid-template-columns: 1fr; }
+    }
+    .miniRow{ margin: 0; }
+    .miniRow .rowHeader{ margin: 0 0 6px; }
+
+    /* Host "Show UI" */
+    #showUiWrap{
+      position: absolute;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      z-index: 1200;
+      display: none;
+    }
+    #showUiBtn{
+      padding:4px 10px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.75);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    /* Fuel HUD (top right) */
+    #fuelHud{
+      position: fixed;
+      right: 10px;
+      top: 10px;
+      z-index: 1100;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 4px;
+      padding: 6px 10px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      user-select: none;
+      pointer-events: none;
+      min-width: 170px;
+    }
+    #fuelLabel{
+      font-size: 12px;
+      font-weight: 900;
+      opacity: .92;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+    #fuelValue{
+      font-size: 18px;
+      font-weight: 1000;
+      letter-spacing: .4px;
+      margin-left: auto;
+      min-width: 44px;
+      text-align: right;
+    }
+    #fuelBarWrap{
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-left: 8px;
+    }
+    #fuelBar{
+      height: 100%;
+      width: 100%;
+      background: rgba(255,255,255,.9);
+      transform-origin: left center;
+      transform: scaleX(1);
+    }
+
+    /* BIG STATUS */
+    #bigStatus{
+      position: fixed;
+      left: 50%;
+      bottom: max(90px, env(safe-area-inset-bottom) + 76px);
+      transform: translateX(-50%);
+      width: calc(100vw - 28px);
+      max-width: 560px;
+      background: rgba(189, 7, 7, 0.35);
+      border: 1px solid rgba(255, 0, 0, 0.45);
+      border-radius: 4px;
+      z-index: 1100;
+      padding: 10px 12px;
+      color: #fff;
+      text-align: center;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      pointer-events: none;
+      user-select: none;
+    }
+    #bigStatus .main{
+      font-size: 18px;
+      font-weight: 1000;
+      letter-spacing: .6px;
+    }
+    #bigStatus .sub{
+      margin-top: 2px;
+      font-size: 13px;
+      opacity: .9;
+      letter-spacing: .2px;
+      min-height: 1.1em;
+    }
+    #bigStatus.danger{
+      color: #ffffff;
+      background: rgba(58, 58, 58, 0.58);
+      border-color: rgb(255, 255, 255);
+    }
+
+    /* ELIMINATED overlay */
+    #elimOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      user-select: none;
+    }
+    #elimOverlay .textWrap{
+      text-align: center;
+      padding: 18px;
+      width: min(680px, calc(100vw - 36px));
+    }
+    #elimOverlay .big{
+      font-size: clamp(34px, 8vw, 68px);
+      font-weight: 1000;
+      letter-spacing: 1px;
+      color: rgba(255, 60, 60, .50);
+      text-shadow: 0 10px 40px rgba(0,0,0,.35);
+    }
+    #elimOverlay .small{
+      margin-top: 8px;
+      font-size: clamp(14px, 3.3vw, 18px);
+      letter-spacing: .4px;
+      line-height: 1.25;
+      color: black;
+    }
+    #elimOverlay .elimTime{
+      display: block;
+      margin-top: 6px;
+      font-size: 0.9em;
+      opacity: 1;
+    }
+    #elimFrame{
+      position: fixed;
+      inset: 8px;
+      z-index: 1900;
+      display: none;
+      pointer-events: none;
+      border: 6px solid rgba(255, 50, 50, .80);
+      border-radius: 4px;
+    }
+
+    /* Pickup marker (fuel) */
+    .pickup {
+      width: 38px;
+      height: 38px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .pickup img{
+      width: 26px; height: 26px;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
+      opacity: .95;
+    }
+    .pickup .val{
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 12px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="panel" class="hidden">
+    <h2>- Falling World Settings -</h2>
+    <div class="note">
+      Tap the map to set the center. Adjust rectangle/grid in the bar at the bottom.
+      <span class="warning">Play in a safe area!</span> Avoid roads/railways.
+      Then press START and share your link.
+      <p><i>Rule: leaving the rectangle eliminates you. Red cells will fall.</i></p>
+    </div>
+
+    <div class="row">
+      <div class="rowHeader"><div class="label">Time before game starts (s)</div><div class="val" id="v_delay"></div></div>
+      <input id="delaySec" type="range" min="0" max="600" step="20" value="100" />
+    </div>
+
+    <div class="row">
+      <div class="rowHeader"><div class="label">Warning time (s) (cells turn red)</div><div class="val" id="v_warn"></div></div>
+      <input id="warnSec" type="range" min="2" max="400" step="10" value="300" />
+    </div>
+
+
+    <div class="row">
+      <div class="rowHeader"><div class="label">Fuel drain in holes (per second)</div><div class="val" id="v_fuelDrain"></div></div>
+      <input id="fuelDrain" type="range" min="1" max="5" step="1" value="1" />
+    </div>
+
+    <div class="row">
+      <div class="rowHeader"><div class="label">Game duration (min)</div><div class="val" id="v_gameMin"></div></div>
+      <input id="gameMin" type="range" min="5" max="120" step="5" value="20" />
+    </div>
+
+    <div class="btnRow">
+      <button id="resetBtn" class="secondary">Reset</button>
+      <button id="startBtn" disabled>START</button>
+    </div>
+
+    <div class="btnRow">
+      <button id="copyBtn" class="secondary" disabled>Copy Link to game</button>
+      <button id="shareBtn" class="secondary" disabled>Share Game</button>
+    </div>
+
+    <div class="btnRow">
+      <button id="hideUiBtn" class="hidebutton">Hide this menu</button>
+    </div>
+
+    <div id="statusSmall"></div>
+  </div>
+
+  <div id="showUiWrap">
+    <button id="showUiBtn">Show Menu</button>
+  </div>
+
+  <div id="areaBar">
+    <div class="titleRow">
+      <div class="t">Area & Grid</div>
+      <div class="hint">Tap map to set center • Adjust while seeing the map</div>
+    </div>
+    <div class="grid">
+      <div class="miniRow">
+        <div class="rowHeader"><div class="label">Rectangle width (m)</div><div class="val" id="v_w"></div></div>
+        <input id="rectW" type="range" min="60" max="1400" step="10" value="260" />
+      </div>
+      <div class="miniRow">
+        <div class="rowHeader"><div class="label">Rectangle height (m)</div><div class="val" id="v_h"></div></div>
+        <input id="rectH" type="range" min="60" max="1400" step="10" value="220" />
+      </div>
+      <div class="miniRow">
+        <div class="rowHeader"><div class="label">Grid columns (X)</div><div class="val" id="v_nx"></div></div>
+        <input id="gridNx" type="range" min="2" max="30" step="1" value="10" />
+      </div>
+      <div class="miniRow">
+        <div class="rowHeader"><div class="label">Grid rows (Y)</div><div class="val" id="v_ny"></div></div>
+        <input id="gridNy" type="range" min="2" max="30" step="1" value="8" />
+      </div>
+      <div class="miniRow" style="grid-column: 1 / -1;">
+        <div class="rowHeader"><div class="label">Grid rotation (deg)</div><div class="val" id="v_rot"></div></div>
+        <input id="gridRot" type="range" min="-180" max="180" step="1" value="18" />
+      </div>
+    </div>
+  </div>
+
+  <div id="fuelHud">
+    <div id="fuelLabel">Fuel</div>
+    <div id="fuelBarWrap"><div id="fuelBar"></div></div>
+    <div id="fuelValue">100</div>
+  </div>
+
+  <div id="bigStatus">
+    <div class="main" id="bsMain">Waiting…</div>
+    <div class="sub" id="bsSub"></div>
+  </div>
+
+  <div id="elimFrame"></div>
+  <div id="elimOverlay">
+    <div class="textWrap">
+      <div class="big">ELIMINATED</div>
+      <div class="small" id="elimSmall">You are out</div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // Wake lock
+    // ============================================================
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try { if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen"); } catch {}
+    }
+    function releaseWakeLock() {
+      try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch {}
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && activeState) requestWakeLock();
+      else releaseWakeLock();
+    });
+
+    // ============================================================
+    // Hash params
+    // ============================================================
+    function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+    function parseHashParams() {
+      const h = (location.hash || "").replace(/^#/, "").trim();
+      const out = {};
+      if (!h) return out;
+      for (const part of h.split("&")) {
+        const kv = part.split("=");
+        const k = kv[0];
+        const v = kv[1] || "";
+        if (!k) continue;
+        out[decodeURIComponent(k)] = decodeURIComponent(v);
+      }
+      return out;
+    }
+    function setHashParams(params) {
+      const parts = [];
+      for (const k in params) parts.push(encodeURIComponent(k) + "=" + encodeURIComponent(String(params[k])));
+      location.hash = parts.join("&");
+    }
+
+    // ============================================================
+    // Seeded RNG (Mulberry32)
+    // ============================================================
+    function mulberry32(seed) {
+      let t = seed >>> 0;
+      return function() {
+        t += 0x6D2B79F5;
+        let x = Math.imul(t ^ (t >>> 15), 1 | t);
+        x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    // ============================================================
+    // Map
+    // ============================================================
+    const map = L.map('map', { zoomControl: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    map.setView([62.17211, 14.92897], 12);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 16),
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    }
+
+    // ============================================================
+    // Self marker (filled red circle)
+    // ============================================================
+    let selfMarker = null;
+    function setSelfMarker(latlng){
+      const style = { radius: 10, color: "#990000", weight: 3, fill: true, fillColor: "#ff2a2a", fillOpacity: 1, opacity: 1 };
+      if (!selfMarker) selfMarker = L.circleMarker(latlng, style).addTo(map);
+      else selfMarker.setLatLng(latlng);
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(
+        (pos) => setSelfMarker([pos.coords.latitude, pos.coords.longitude]),
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 1000, timeout: 8000 }
+      );
+    }
+
+    // ============================================================
+    // Big status
+    // ============================================================
+    const bsMain = document.getElementById("bsMain");
+    const bsSub  = document.getElementById("bsSub");
+    const bigStatus = document.getElementById("bigStatus");
+    function setBigStatus(main, sub, danger){
+      bsMain.textContent = main || "";
+      bsSub.textContent = sub || "";
+      bigStatus.classList.toggle("danger", !!danger);
+    }
+
+    // ============================================================
+    // Elimination UI + sound
+    // ============================================================
+    const sndEliminated = new Audio("assets/eliminated.mp3");
+    sndEliminated.preload = "auto";
+
+    let eliminated = false;
+    let eliminatedAt = null;
+    const elimOverlay = document.getElementById("elimOverlay");
+    const elimFrame = document.getElementById("elimFrame");
+    const elimSmall = document.getElementById("elimSmall");
+
+    let fallsSurvived = 0;
+
+    function eliminate(reason){
+      if (eliminated) return;
+      eliminated = true;
+      eliminatedAt = new Date();
+      sndEliminated.currentTime = 0;
+      sndEliminated.play().catch(()=>{});
+
+      const tStr = eliminatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      elimSmall.innerHTML =
+        (reason || "You are out")
+        + `<br><span class="elimTime">Eliminated at ${tStr}</span>`
+        + `<br><span class="elimTime">Falls survived: ${fallsSurvived}</span>`;
+
+      elimOverlay.style.display = "flex";
+      elimFrame.style.display = "block";
+      setBigStatus("ELIMINATED", reason || "", true);
+    }
+
+    // ============================================================
+    // Fuel
+    // ============================================================
+    const fuelValueEl = document.getElementById("fuelValue");
+    const fuelBarEl = document.getElementById("fuelBar");
+    let fuel = 100;
+    const FUEL_MAX = 200;
+    const FUEL_START = 100;
+
+    function setFuel(v){
+      fuel = clamp(v, 0, FUEL_MAX);
+      fuelValueEl.textContent = String(Math.round(fuel));
+      const pct = clamp(fuel / FUEL_MAX, 0, 1);
+      fuelBarEl.style.transform = "scaleX(" + pct + ")";
+      fuelBarEl.style.opacity = (fuel < 25 ? 0.75 : 0.95);
+    }
+    setFuel(FUEL_START);
+
+    // ============================================================
+    // Projected geometry (EPSG:3857 meters)
+    // ============================================================
+    function projectLatLng(latlng){
+      return L.CRS.EPSG3857.project(L.latLng(latlng));
+    }
+    function unprojectPoint(pt){
+      return L.CRS.EPSG3857.unproject(L.point(pt.x, pt.y));
+    }
+    function rot2(x, y, angRad){
+      const c = Math.cos(angRad), s = Math.sin(angRad);
+      return { x: x*c - y*s, y: x*s + y*c };
+    }
+
+    // Convert a random point in the unrotated rectangle to latlng (respecting rotation)
+    function localUnrotToLatLng(st, xUnrot, yUnrot){
+      const centerLL = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+      const centerP  = projectLatLng(centerLL);
+      const ang = st.gridRotDeg * Math.PI/180;
+
+      const pr = rot2(xUnrot, yUnrot, ang);
+      return unprojectPoint({ x: centerP.x + pr.x, y: centerP.y + pr.y });
+    }
+
+    function distMeters3857(aLatLng, bLatLng){
+      const a = projectLatLng(aLatLng);
+      const b = projectLatLng(bLatLng);
+      const dx = a.x - b.x, dy = a.y - b.y;
+      return Math.hypot(dx, dy);
+    }
+
+    // ============================================================
+    // Grid rendering
+    // ============================================================
+    let gridLayer = L.layerGroup().addTo(map);
+    let rectOutline = null;
+
+    let cellPolys = [];
+    let cellState = []; // 0 safe, 1 warning, 2 fallen
+
+    // Outside mask globals
+    let outsideMask = null;
+    let lastRectCorners = null;
+
+    function clearGrid(){
+      gridLayer.clearLayers();
+      rectOutline = null;
+      cellPolys = [];
+      cellState = [];
+      outsideMask = null;
+      lastRectCorners = null;
+    }
+
+    function cellStyleFor(state){
+      if (state === 1) return { color: "rgba(255,255,255,.22)", weight: 1, fill: true, fillColor: "#ff2a2a", fillOpacity: 0.60, interactive:false };
+      if (state === 2) return { color: "rgba(255,255,255,.08)", weight: 1, fill: true, fillColor: "#000000", fillOpacity: 0.25, interactive:false };
+      return { color: "rgba(0,0,0,.2)", weight: 1, fill: true, fillColor: "#ffffff", fillOpacity: 0.08, interactive:false };
+    }
+
+    function buildGridPolys(st){
+      // NOTE: keep pickups separate; they live on map, not in gridLayer
+      gridLayer.clearLayers();
+      rectOutline = null;
+      cellPolys = [];
+      cellState = new Array(st.gridNx * st.gridNy).fill(0);
+
+      const centerLL = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+      const centerP = projectLatLng(centerLL);
+
+      const W = st.rectWm, H = st.rectHm;
+      const nx = st.gridNx, ny = st.gridNy;
+      const ang = st.gridRotDeg * Math.PI/180;
+
+      const dx = W / nx;
+      const dy = H / ny;
+
+      // Rectangle corners
+      const corners = [
+        {x:-W/2, y:-H/2},
+        {x: W/2, y:-H/2},
+        {x: W/2, y: H/2},
+        {x:-W/2, y: H/2},
+      ].map(p => rot2(p.x, p.y, ang))
+       .map(p => unprojectPoint({ x: centerP.x + p.x, y: centerP.y + p.y }));
+
+      lastRectCorners = corners;
+
+      rectOutline = L.polygon(corners, {
+        color: "rgba(255,0,0,.65)",
+        weight: 3,
+        fill: false,
+        interactive: false
+      }).addTo(gridLayer);
+
+      // Cell polys
+      for (let r = 0; r < ny; r++){
+        for (let c = 0; c < nx; c++){
+          const x0 = -W/2 + c*dx;
+          const x1 = x0 + dx;
+
+          const yTop = H/2 - r*dy;
+          const yBot = yTop - dy;
+
+          const pts = [
+            {x:x0, y:yBot},
+            {x:x1, y:yBot},
+            {x:x1, y:yTop},
+            {x:x0, y:yTop},
+          ].map(p => rot2(p.x, p.y, ang))
+           .map(p => unprojectPoint({ x: centerP.x + p.x, y: centerP.y + p.y }));
+
+          const id = r*nx + c;
+          const poly = L.polygon(pts, cellStyleFor(0)).addTo(gridLayer);
+          cellPolys[id] = poly;
+        }
+      }
+    }
+
+    function applyCellStyles(){
+      for (let i=0; i<cellPolys.length; i++){
+        if (cellPolys[i]) cellPolys[i].setStyle(cellStyleFor(cellState[i]));
+      }
+    }
+
+    function setOutsideMaskVisible(visible){
+      if (!visible){
+        if (outsideMask){
+          gridLayer.removeLayer(outsideMask);
+          outsideMask = null;
+        }
+        return;
+      }
+      if (!activeState || !lastRectCorners) return;
+
+      const st = activeState;
+      const centerLL = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+      const centerP = projectLatLng(centerLL);
+
+      const R = 50000; // 50km square, huge outer ring
+      const outerPts = [
+        unprojectPoint({x: centerP.x - R, y: centerP.y - R}),
+        unprojectPoint({x: centerP.x + R, y: centerP.y - R}),
+        unprojectPoint({x: centerP.x + R, y: centerP.y + R}),
+        unprojectPoint({x: centerP.x - R, y: centerP.y + R}),
+      ];
+
+      if (outsideMask){
+        gridLayer.removeLayer(outsideMask);
+        outsideMask = null;
+      }
+
+      outsideMask = L.polygon([outerPts, lastRectCorners], {
+        stroke: false,
+        fill: true,
+        fillColor: "#000",
+        fillOpacity: 0.55,
+        interactive: false
+      }).addTo(gridLayer);
+    }
+
+    // ============================================================
+    // Graph helpers (8-neighbor)
+    // ============================================================
+    function getNeighbors8(nx, ny, id){
+      const r = Math.floor(id / nx);
+      const c = id % nx;
+      const out = [];
+      for (let dr=-1; dr<=1; dr++){
+        for (let dc=-1; dc<=1; dc++){
+          if (dr===0 && dc===0) continue;
+          const rr = r+dr, cc = c+dc;
+          if (rr<0 || rr>=ny || cc<0 || cc>=nx) continue;
+          out.push(rr*nx + cc);
+        }
+      }
+      return out;
+    }
+    function areAdjacent8(nx, a, b){
+      const ar = Math.floor(a/nx), ac = a%nx;
+      const br = Math.floor(b/nx), bc = b%nx;
+      return Math.max(Math.abs(ar-br), Math.abs(ac-bc)) === 1;
+    }
+    function isConnected8(nx, ny, safeSet){
+      const arr = Array.from(safeSet);
+      if (arr.length <= 1) return true;
+      const start = arr[0];
+      const visited = new Set([start]);
+      const q = [start];
+      while (q.length){
+        const cur = q.pop();
+        const nbs = getNeighbors8(nx, ny, cur);
+        for (let i=0; i<nbs.length; i++){
+          const nb = nbs[i];
+          if (!safeSet.has(nb)) continue;
+          if (visited.has(nb)) continue;
+          visited.add(nb);
+          q.push(nb);
+        }
+      }
+      return visited.size === safeSet.size;
+    }
+    function noIsolatedCells(nx, ny, safeSet){
+      if (safeSet.size <= 1) return true;
+      for (const id of safeSet){
+        const nbs = getNeighbors8(nx, ny, id);
+        let ok = false;
+        for (let i=0; i<nbs.length; i++){
+          if (safeSet.has(nbs[i])) { ok = true; break; }
+        }
+        if (!ok) return false;
+      }
+      return true;
+    }
+
+    // ============================================================
+    // Falling selection (combined removal connectivity fix)
+    // ============================================================
+    function chooseFallSetDeterministic(st, cycleIndex, safeSet){
+      const nx = st.gridNx, ny = st.gridNy;
+      const rng = mulberry32((st.seed ^ 0xBADC0FFE) + (cycleIndex*0x9E3779B9));
+
+      const safeArr = Array.from(safeSet);
+      for (let i=safeArr.length-1; i>0; i--){
+        const j = Math.floor(rng()*(i+1));
+        const tmp = safeArr[i]; safeArr[i] = safeArr[j]; safeArr[j] = tmp;
+      }
+
+      const remaining = safeSet.size;
+      if (remaining <= 2) return safeArr.length ? [safeArr[0]] : [];
+
+      const pct = clamp(0.10 + 0.06 * Math.min(1, cycleIndex / 12), 0.10, 0.22);
+      let target = Math.max(1, Math.floor(remaining * pct));
+      target = clamp(target, 1, Math.min(10, remaining - 1));
+      if (remaining <= 12) target = clamp(target, 1, Math.min(4, remaining - 1));
+      if (remaining <= 7)  target = clamp(target, 1, Math.min(2, remaining - 1));
+
+      function isConnectedAfterRemoving(removeSet){
+        const newSafe = new Set(safeSet);
+        for (const id of removeSet) newSafe.delete(id);
+        if (newSafe.size <= 1) return true;
+        return isConnected8(nx, ny, newSafe);
+      }
+      function noIsolatedAfterRemoving(removeSet){
+        const newSafe = new Set(safeSet);
+        for (const id of removeSet) newSafe.delete(id);
+        return noIsolatedCells(nx, ny, newSafe);
+      }
+
+      const chosen = [];
+      const chosenSet = new Set();
+
+      function canAddCandidate(cand){
+        if (!safeSet.has(cand)) return false;
+
+        // keep falling cells separated (8-neigh)
+        for (const ch of chosen){
+          if (ch === cand) return false;
+          if (areAdjacent8(nx, ch, cand)) return false;
+        }
+
+        // CRITICAL FIX: test connectivity after removing (chosen + cand)
+        const removeSet = new Set(chosenSet);
+        removeSet.add(cand);
+
+        if (!isConnectedAfterRemoving(removeSet)) return false;
+        if (!noIsolatedAfterRemoving(removeSet)) return false;
+
+        return true;
+      }
+
+      for (let i=0; i<safeArr.length && chosen.length < target; i++){
+        const cand = safeArr[i];
+        if (chosenSet.has(cand)) continue;
+        if (!canAddCandidate(cand)) continue;
+        chosen.push(cand);
+        chosenSet.add(cand);
+      }
+
+      // Guardrail: shrink until valid (shouldn't be needed, but ensures never disconnects)
+      while (chosen.length > 0){
+        const removeSet = new Set(chosen);
+        if (isConnectedAfterRemoving(removeSet) && noIsolatedAfterRemoving(removeSet)) break;
+        chosen.pop();
+      }
+
+      // If no choice possible, try single removal
+      if (chosen.length === 0){
+        for (let i=0; i<safeArr.length; i++){
+          const cand = safeArr[i];
+          const removeSet = new Set([cand]);
+          if (isConnectedAfterRemoving(removeSet) && noIsolatedAfterRemoving(removeSet)){
+            chosen.push(cand);
+            break;
+          }
+        }
+      }
+
+      return chosen;
+    }
+
+    // ============================================================
+    // Phase schedule
+    // ============================================================
+    function computePhaseAtTime(st, tMs){
+  const start = st.startedAtMs;
+  const delayEnd = start + st.delaySec*1000;
+  const endAt = start + st.gameDurationSec*1000;
+
+  if (tMs < start) return { kind: "prestart" };
+  if (tMs >= endAt) return { kind: "finished", endAtMs: endAt };
+  if (tMs < delayEnd) return { kind: "delay", tLeftMs: delayEnd - tMs, endAtMs: endAt };
+
+  const elapsed = tMs - delayEnd;
+  const warnMs = st.warnSec*1000;
+  const cycleIndex = Math.floor(elapsed / Math.max(1, warnMs));
+  const within = elapsed - cycleIndex*warnMs;
+
+  return { kind: "warning", cycleIndex, tLeftMs: warnMs - within, endAtMs: endAt };
+}
+
+
+    // ============================================================
+    // Player position -> local unrotated coords + cell id
+    // ============================================================
+    function pointToLocalUnrot(st, myLatLng){
+      const centerLL = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
+      const centerP = projectLatLng(centerLL);
+      const myP = projectLatLng(myLatLng);
+
+      const dx = myP.x - centerP.x;
+      const dy = myP.y - centerP.y;
+
+      const ang = st.gridRotDeg * Math.PI/180;
+      return rot2(dx, dy, -ang);
+    }
+    function isInsideRectUnrot(st, x, y){
+      return (Math.abs(x) <= st.rectWm/2) && (Math.abs(y) <= st.rectHm/2);
+    }
+    function localXYToCellId(st, xUnrot, yUnrot){
+      const W = st.rectWm, H = st.rectHm;
+      const nx = st.gridNx, ny = st.gridNy;
+      if (Math.abs(xUnrot) > W/2 || Math.abs(yUnrot) > H/2) return -1;
+
+      const dx = W / nx;
+      const dy = H / ny;
+
+      const col = Math.floor((xUnrot + W/2) / dx);
+      const row = Math.floor((H/2 - yUnrot) / dy);
+
+      if (col < 0 || col >= nx || row < 0 || row >= ny) return -1;
+      return row*nx + col;
+    }
+
+    // ============================================================
+    // Fuel pickups (hearts style): not tied to cells
+    // ============================================================
+    let pickupMarkers = new Map();      // id -> marker
+    let collectedPickupIds = new Set(); // local only
+
+    function makeFuelIcon(value) {
+      const html = `
+        <div class="pickup">
+          <img src="assets/jetpack.png" alt="fuel" onerror="this.remove(); this.parentElement.insertAdjacentHTML('afterbegin','<div style=&quot;font-size:18px;filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));&quot;>⛽</div>');">
+          <div class="val">+${value}</div>
+        </div>`;
+      return L.divIcon({ html: html, className: "", iconSize: [38,38], iconAnchor:[19,19] });
+    }
+
+    function clearPickups(){
+      for (const m of pickupMarkers.values()) map.removeLayer(m);
+      pickupMarkers.clear();
+      collectedPickupIds.clear();
+    }
+
+    function pickupsStorageKey(st){
+      return "fallingworld_pickups_" + st.seed + "_" + st.startedAtMs;
+    }
+    function fallsStorageKey(st){
+      return "fallingworld_falls_" + st.seed + "_" + st.startedAtMs;
+    }
+
+    function buildSeededPickups(st){
+      const rng = mulberry32(st.seed ^ 0xA53C9E17);
+
+      // ===== TUNE =====
+      const INITIAL_COUNT = 10;   // fuel pickups at game start
+      const SPAWN_EVERY_S = 20;   // interval spawn (like hearts)
+      const MAX_ACTIVE    = 16;   // cap active on map
+      const AMOUNTS       = [10, 10, 15, 15, 20, 25, 30];
+      // =================
+
+      st.pickupMaxActive = MAX_ACTIVE;
+
+      const startAtMs = st.startedAtMs + st.delaySec*1000; // after delay
+      const endAtMs   = st.startedAtMs + st.gameDurationSec*1000;
+
+      const picks = [];
+      let id = 0;
+
+      function randPosInRect(){
+        // uniform in unrotated rectangle
+        const x = (rng() - 0.5) * st.rectWm;
+        const y = (rng() - 0.5) * st.rectHm;
+        return { x: x, y: y };
+      }
+      function randAmount(){
+        return AMOUNTS[Math.floor(rng()*AMOUNTS.length)];
+      }
+
+      for (let i=0; i<INITIAL_COUNT; i++){
+        const pos = randPosInRect();
+        picks.push({
+          id: "f" + (id++),
+          value: randAmount(),
+          spawnAtMs: startAtMs + Math.floor(rng()*1200),
+          x: pos.x,
+          y: pos.y,
+          spawned: false
+        });
+      }
+
+      for (let ms = startAtMs + SPAWN_EVERY_S*1000; ms < endAtMs; ms += SPAWN_EVERY_S*1000){
+        const pos = randPosInRect();
+        picks.push({
+          id: "f" + (id++),
+          value: randAmount(),
+          spawnAtMs: ms + Math.floor((rng()-0.5)*1200),
+          x: pos.x,
+          y: pos.y,
+          spawned: false
+        });
+      }
+
+      picks.sort((a,b)=>a.spawnAtMs-b.spawnAtMs);
+      return picks;
+    }
+
+    function updatePickups(st, nowMs, myLatLngOrNull){
+      if (!st || !st.pickups) return;
+
+      const maxActive = st.pickupMaxActive || 16;
+
+      // Spawn when time arrives, respect cap
+      for (let i=0; i<st.pickups.length; i++){
+        if (pickupMarkers.size >= maxActive) break;
+
+        const p = st.pickups[i];
+        if (p.spawned) continue;
+        if (nowMs < p.spawnAtMs) break; // sorted
+
+        p.spawned = true;
+
+        const ll = localUnrotToLatLng(st, p.x, p.y);
+        const m  = L.marker(ll, { icon: makeFuelIcon(p.value), interactive: false });
+        m.addTo(map);
+        pickupMarkers.set(p.id, m);
+      }
+
+      // Collection by distance (not cell-based)
+      if (!myLatLngOrNull) return;
+
+      const PICKUP_RADIUS_M = 12; // tune
+
+      for (let i=0; i<st.pickups.length; i++){
+        const p = st.pickups[i];
+        if (!p.spawned) continue;
+        if (collectedPickupIds.has(p.id)) continue;
+
+        const mk = pickupMarkers.get(p.id);
+        if (!mk) continue;
+
+        const d = distMeters3857(myLatLngOrNull, mk.getLatLng());
+        if (d <= PICKUP_RADIUS_M){
+          collectedPickupIds.add(p.id);
+          map.removeLayer(mk);
+          pickupMarkers.delete(p.id);
+
+          setFuel(fuel + p.value);
+
+          try {
+            localStorage.setItem(pickupsStorageKey(st), JSON.stringify(Array.from(collectedPickupIds)));
+          } catch {}
+        }
+      }
+    }
+
+    // ============================================================
+    // Game state + UI refs
+    // ============================================================
+    const panel = document.getElementById("panel");
+    const areaBar = document.getElementById("areaBar");
+    const showUiWrap = document.getElementById("showUiWrap");
+    const showUiBtn = document.getElementById("showUiBtn");
+    const hideUiBtn = document.getElementById("hideUiBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const startBtn = document.getElementById("startBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const shareBtn = document.getElementById("shareBtn");
+    const statusSmall = document.getElementById("statusSmall");
+
+    const delaySecEl = document.getElementById("delaySec");
+    const warnSecEl  = document.getElementById("warnSec");
+    
+    const gameMinEl  = document.getElementById("gameMin");
+    const fuelDrainEl = document.getElementById("fuelDrain");
+
+    const rectWEl = document.getElementById("rectW");
+    const rectHEl = document.getElementById("rectH");
+    const gridNxEl = document.getElementById("gridNx");
+    const gridNyEl = document.getElementById("gridNy");
+    const gridRotEl = document.getElementById("gridRot");
+
+    const v_delay = document.getElementById("v_delay");
+    const v_warn  = document.getElementById("v_warn");
+
+    const v_gameMin = document.getElementById("v_gameMin");
+    const v_fuelDrain = document.getElementById("v_fuelDrain");
+    const v_w = document.getElementById("v_w");
+    const v_h = document.getElementById("v_h");
+    const v_nx = document.getElementById("v_nx");
+    const v_ny = document.getElementById("v_ny");
+    const v_rot = document.getElementById("v_rot");
+
+    function reflectSliderValues(){
+      v_delay.textContent = delaySecEl.value + " s";
+      v_warn.textContent  = warnSecEl.value  + " s";
+    
+      v_gameMin.textContent = gameMinEl.value + " min";
+      v_fuelDrain.textContent = fuelDrainEl.value + "/s";
+
+      v_w.textContent = rectWEl.value + " m";
+      v_h.textContent = rectHEl.value + " m";
+      v_nx.textContent = gridNxEl.value;
+      v_ny.textContent = gridNyEl.value;
+      v_rot.textContent = gridRotEl.value + "°";
+    }
+    reflectSliderValues();
+
+    let startCenterMarker = null;
+    let chosenStartCenter = null;
+
+    let activeState = null;
+    let isHostLocal = false;
+
+    function isGuestLinkPresent() {
+      const p = parseHashParams();
+      return !!p.v;
+    }
+
+    function enableHostPanel(){
+      if (!isHostLocal && isGuestLinkPresent()) return;
+      panel.classList.remove("hidden");
+      showUiWrap.style.display = "none";
+    }
+    function hideHostPanel(){
+      panel.classList.add("hidden");
+      showUiWrap.style.display = "block";
+    }
+    hideUiBtn.onclick = hideHostPanel;
+    showUiBtn.onclick = function(){ enableHostPanel(); };
+
+    const allSliders = [delaySecEl, warnSecEl, gameMinEl, fuelDrainEl, rectWEl, rectHEl, gridNxEl, gridNyEl, gridRotEl];
+    for (let i=0; i<allSliders.length; i++){
+      allSliders[i].addEventListener("input", function(){
+        reflectSliderValues();
+        if (!activeState) previewGridIfPossible();
+      });
+    }
+
+    function setStartCenter(latlng){
+      chosenStartCenter = latlng;
+
+      if (!startCenterMarker) {
+        startCenterMarker = L.marker(latlng, { draggable: true }).addTo(map);
+        startCenterMarker.on("dragend", function(){
+          chosenStartCenter = startCenterMarker.getLatLng();
+          previewGridIfPossible();
+          startBtn.disabled = !chosenStartCenter;
+        });
+      } else startCenterMarker.setLatLng(latlng);
+
+      areaBar.style.display = "block";
+      previewGridIfPossible();
+      startBtn.disabled = !chosenStartCenter;
+      showUiWrap.style.display = "block";
+    }
+
+    function previewGridIfPossible(){
+      if (!chosenStartCenter) return;
+      const st = {
+        baseCenter: { lat: chosenStartCenter.lat, lng: chosenStartCenter.lng },
+        rectWm: Math.round(Number(rectWEl.value)),
+        rectHm: Math.round(Number(rectHEl.value)),
+        gridNx: Math.round(Number(gridNxEl.value)),
+        gridNy: Math.round(Number(gridNyEl.value)),
+        gridRotDeg: Math.round(Number(gridRotEl.value))
+      };
+      buildGridPolys(st);
+      applyCellStyles();
+    }
+
+    map.on("click", function(e){
+      if (activeState) return;
+      if (isGuestLinkPresent()) return;
+      setStartCenter(e.latlng);
+    });
+
+    // ============================================================
+    // Host start -> link
+    // ============================================================
+    startBtn.onclick = function(){
+      if (!chosenStartCenter) return;
+      isHostLocal = true;
+
+      const seed = (crypto && crypto.getRandomValues)
+        ? (crypto.getRandomValues(new Uint32Array(1))[0] >>> 0)
+        : (Math.floor(Math.random() * 2147483647) >>> 0);
+
+      const startedAtMs = Date.now();
+
+      const params = {
+        v: 1,
+        lat: chosenStartCenter.lat.toFixed(6),
+        lng: chosenStartCenter.lng.toFixed(6),
+
+        delay: Math.round(Number(delaySecEl.value)),
+        warn:  Math.round(Number(warnSecEl.value)),
+        
+        gameMin: Math.round(Number(gameMinEl.value)),
+        fd: Math.round(Number(fuelDrainEl.value)),
+
+        w: Math.round(Number(rectWEl.value)),
+        h: Math.round(Number(rectHEl.value)),
+        nx: Math.round(Number(gridNxEl.value)),
+        ny: Math.round(Number(gridNyEl.value)),
+        rot: Math.round(Number(gridRotEl.value)),
+
+        seed: seed,
+        t0: startedAtMs
+      };
+
+      setHashParams(params);
+      loadFromHash();
+
+      if (startCenterMarker) { map.removeLayer(startCenterMarker); startCenterMarker = null; }
+      areaBar.style.display = "none";
+
+      copyBtn.disabled = false;
+      shareBtn.disabled = false;
+      statusSmall.textContent = "Started. Copy and share the link.";
+    };
+
+    copyBtn.onclick = async function(){
+      try {
+        await navigator.clipboard.writeText(location.href);
+        statusSmall.textContent = "Copied share link ✅";
+      } catch {
+        prompt("Copy this link:", location.href);
+      }
+    };
+
+    shareBtn.onclick = async function(){
+      const msg = "Come play Falling World with me:\n" + location.href;
+      if (navigator.share) {
+        try { await navigator.share({ text: msg }); statusSmall.textContent = "Share opened ✅"; return; } catch {}
+      }
+      try { await navigator.clipboard.writeText(msg); statusSmall.textContent = "Share message copied ✅"; }
+      catch { prompt("Copy this message:", msg); }
+    };
+
+    resetBtn.onclick = function(){
+      location.hash = "";
+      activeState = null;
+      isHostLocal = false;
+      releaseWakeLock();
+
+      eliminated = false;
+      eliminatedAt = null;
+      elimOverlay.style.display = "none";
+      elimFrame.style.display = "none";
+      elimSmall.textContent = "You are out";
+
+      fallsSurvived = 0;
+      setFuel(FUEL_START);
+
+      clearPickups();
+      clearGrid();
+
+      if (startCenterMarker) { map.removeLayer(startCenterMarker); startCenterMarker = null; }
+      chosenStartCenter = null;
+
+      copyBtn.disabled = true;
+      shareBtn.disabled = true;
+      startBtn.disabled = true;
+
+      panel.classList.add("hidden");
+      showUiWrap.style.display = "none";
+      areaBar.style.display = "none";
+      statusSmall.textContent = "Reset. Tap the map to pick a new center.";
+      setBigStatus("Waiting…", "", false);
+    };
+
+    // ============================================================
+    // Hash load (guest)
+    // ============================================================
+    function loadFromHash(){
+      const p = parseHashParams();
+      if (!p || !p.v) return false;
+      const v = Number(p.v);
+      if (v !== 1) return false;
+
+      if (!isHostLocal) {
+        panel.classList.add("hidden");
+        showUiWrap.style.display = "none";
+        areaBar.style.display = "none";
+      }
+
+      const baseCenter = { lat: Number(p.lat), lng: Number(p.lng) };
+      const delaySec = Number(p.delay);
+      const warnSec  = Number(p.warn);
+      
+      const gameMin  = Number(p.gameMin);
+      const fuelDrainPerSec = Number(p.fd);
+
+      const rectWm = Number(p.w);
+      const rectHm = Number(p.h);
+      const gridNx = Number(p.nx);
+      const gridNy = Number(p.ny);
+      const gridRotDeg = Number(p.rot);
+
+      const seed = Number(p.seed) >>> 0;
+      const startedAtMs = Number(p.t0);
+
+      const okNums = [baseCenter.lat, baseCenter.lng, delaySec, warnSec, gameMin, fuelDrainPerSec, rectWm, rectHm, gridNx, gridNy, gridRotDeg, seed, startedAtMs]
+        .every(function(x){ return Number.isFinite(x); });
+      if (!okNums) return false;
+
+      activeState = {
+        version: 1,
+        seed: seed,
+        startedAtMs: startedAtMs,
+        baseCenter: baseCenter,
+
+        delaySec: delaySec,
+        warnSec: warnSec,
+        gameDurationSec: Math.max(60, gameMin*60),
+        fuelDrainPerSec: clamp(Math.round(fuelDrainPerSec), 1, 200),
+
+        rectWm: clamp(Math.round(rectWm), 40, 3000),
+        rectHm: clamp(Math.round(rectHm), 40, 3000),
+        gridNx: clamp(Math.round(gridNx), 2, 40),
+        gridNy: clamp(Math.round(gridNy), 2, 40),
+        gridRotDeg: clamp(Math.round(gridRotDeg), -180, 180),
+
+        safeSet: new Set(),
+        lastAppliedCycle: -1,
+        activeFallSet: [],
+        pickups: null,
+      };
+
+      // Build grid visuals
+      buildGridPolys(activeState);
+      applyCellStyles();
+
+      // Init safe set
+      const total = activeState.gridNx * activeState.gridNy;
+      activeState.safeSet = new Set();
+      for (let i=0; i<total; i++) activeState.safeSet.add(i);
+
+      // Restore falls survived
+      try {
+        const saved = localStorage.getItem(fallsStorageKey(activeState));
+        fallsSurvived = saved ? (Number(saved) || 0) : 0;
+      } catch { fallsSurvived = 0; }
+
+      // Restore collected pickups
+      try {
+        const saved = JSON.parse(localStorage.getItem(pickupsStorageKey(activeState)) || "[]");
+        collectedPickupIds = new Set(saved);
+      } catch { collectedPickupIds = new Set(); }
+
+      // Rebuild pickups schedule
+      activeState.pickups = buildSeededPickups(activeState);
+
+      // Reset elimination + fuel
+      eliminated = false;
+      eliminatedAt = null;
+      elimOverlay.style.display = "none";
+      elimFrame.style.display = "none";
+      setFuel(FUEL_START);
+
+      // Clear old markers; existing pickup IDs in storage will prevent re-collect
+      clearPickups();
+
+      map.setView([baseCenter.lat, baseCenter.lng], 17);
+
+      return true;
+    }
+
+    window.addEventListener("hashchange", function(){ loadFromHash(); });
+
+    // ============================================================
+    // Falling cycles
+    // ============================================================
+    function setWarningCells(st, cycleIndex){
+      // clear old warnings
+      for (let i=0; i<cellState.length; i++){
+        if (cellState[i] === 1) cellState[i] = 0;
+      }
+      if (st.safeSet.size <= 0) return;
+
+      const fallSet = chooseFallSetDeterministic(st, cycleIndex, st.safeSet);
+      st.activeFallSet = fallSet.slice();
+
+      for (let i=0; i<fallSet.length; i++){
+        const id = fallSet[i];
+        if (st.safeSet.has(id)) cellState[id] = 1;
+      }
+      applyCellStyles();
+    }
+
+    function applyFall(st){
+      const toFall = st.activeFallSet || [];
+      let fellAny = false;
+
+      for (let i=0; i<toFall.length; i++){
+        const id = toFall[i];
+        if (!st.safeSet.has(id)) continue;
+        st.safeSet.delete(id);
+        cellState[id] = 2;
+        fellAny = true;
+      }
+
+      if (fellAny){
+        fallsSurvived++;
+        try { localStorage.setItem(fallsStorageKey(st), String(fallsSurvived)); } catch {}
+      }
+
+      applyCellStyles();
+    }
+
+    // ============================================================
+    // Main loop
+    // ============================================================
+    let lastTickMs = Date.now();
+    let lastPhaseKind = null;
+
+    function loop(){
+      const t = Date.now();
+      const dt = Math.max(0, (t - lastTickMs) / 1000);
+      lastTickMs = t;
+
+      if (activeState){
+        const st = activeState;
+        const ph = computePhaseAtTime(st, t);
+
+        if (!wakeLock) requestWakeLock();
+
+        // Outside mask after delay
+        const gameHasStarted = (ph.kind === "warning" || ph.kind === "falling" || ph.kind === "finished");
+        setOutsideMaskVisible(gameHasStarted);
+
+        // Always spawn/render pickups even before GPS resolves
+        if (!eliminated && st.pickups) {
+          updatePickups(st, t, null);
+        }
+
+        if (ph.kind === "warning"){
+  const sLeft = Math.ceil(ph.tLeftMs/1000);
+  setBigStatus("Move from the red areas!", "They will fall in " + sLeft + "s", false);
+
+  // When a new cycle starts, instantly drop last cycle's red cells,
+  // then choose new red cells for this cycle.
+  if (st.lastAppliedCycle !== ph.cycleIndex || lastPhaseKind !== "warning"){
+    // If we already had a previous cycle, drop its selected cells now.
+    if (st.lastAppliedCycle >= 0 && st.activeFallSet && st.activeFallSet.length){
+      applyFall(st); // turns those red cells into holes immediately
+    }
+
+    st.lastAppliedCycle = ph.cycleIndex;
+    setWarningCells(st, ph.cycleIndex); // pick + paint new red cells
+  }
+}
+else if (ph.kind === "delay"){
+  const s = Math.ceil(ph.tLeftMs/1000);
+  setBigStatus("Time until game starts", s + "s", false);
+}
+else if (ph.kind === "finished"){
+  setBigStatus("Game ended", "", false);
+}
+
+        // Player checks (only if we have location)
+        if (!eliminated && (ph.kind === "warning" || ph.kind === "falling")){
+
+          const myPos = selfMarker ? selfMarker.getLatLng() : null;
+          if (myPos){
+  const unrot = pointToLocalUnrot(st, myPos);
+  const inside = isInsideRectUnrot(st, unrot.x, unrot.y);
+
+  // allow collection when we do have location
+  if (st.pickups) updatePickups(st, t, myPos);
+
+  const drainRate = (st.fuelDrainPerSec || 18);
+
+  if (!inside){
+    // Outside acts like a void/hole: drain fuel, die when empty.
+    setFuel(fuel - drainRate * dt);
+    if (fuel <= 0.001){
+      setFuel(0);
+      eliminate("Out of fuel outside the area");
+    }
+  } else {
+    const myCell = localXYToCellId(st, unrot.x, unrot.y);
+    const inFallen = (myCell >= 0 && cellState[myCell] === 2);
+
+    if (inFallen){
+      setFuel(fuel - drainRate * dt);
+      if (fuel <= 0.001){
+        setFuel(0);
+        eliminate("Out of fuel in a hole");
+      }
+    }
+  }
+}
+
+        }
+
+        lastPhaseKind = ph.kind;
+      }
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    // ============================================================
+    // Init
+    // ============================================================
+    if (!loadFromHash()) {
+      panel.classList.add("hidden");
+      showUiWrap.style.display = "none";
+      areaBar.style.display = "none";
+      statusSmall.textContent = "Tap the map to pick start center.";
+      setBigStatus("Waiting…", "", false);
+    }
+
+    // If not a guest link, host can open panel
+    // (panel stays hidden until they press Show Menu)
+  </script>
+</body>
+</html>
