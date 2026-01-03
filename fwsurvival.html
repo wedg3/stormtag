@@ -167,27 +167,23 @@
       z-index: 1400;
       padding: 6px 3px;
       color: #fff;
-        display: flex;
+      display: flex;
       flex-direction: column;
       align-items: center;
-
       min-width: auto;
-
       user-select: none;
       pointer-events: none;
-      
     }
 
     /* Fuel HUD (top right) */
     #fuelHud{
-      
       z-index: 1100;
       background: rgba(0,0,0,.30);
       border: 0px solid rgba(0, 0, 0, 0.9);
       border-radius: 1px;
       padding: 6px 3px;
       color: #fff;
-        display: flex;
+      display: flex;
       flex-direction: column;
       align-items: center;
       gap: 3px;
@@ -196,109 +192,87 @@
       -webkit-backdrop-filter: blur(10px);
       user-select: none;
       pointer-events: none;
-      
     }
     #fuelLabel{
-      
       font-size: 10px;
       font-weight: 900;
       opacity: .92;
       letter-spacing: .4px;
       text-transform: uppercase;
-              text-shadow:        -1px -1px 0 #000000,
-     1px -1px 0 #000000,
-    -1px  1px 0 #000000,
-     1px  1px 0 #000000;
-      
+      text-shadow: -1px -1px 0 #000000,
+                   1px -1px 0 #000000,
+                  -1px  1px 0 #000000,
+                   1px  1px 0 #000000;
     }
 
-        #fuelLabel2{
-      
+    #fuelLabel2{
       font-size: 10px;
       font-weight: 500;
-        text-shadow:        -1px -1px 0 #000000,
-     1px -1px 0 #000000,
-    -1px  1px 0 #000000,
-     1px  1px 0 #000000;
-
+      text-shadow: -1px -1px 0 #000000,
+                   1px -1px 0 #000000,
+                  -1px  1px 0 #000000,
+                   1px  1px 0 #000000;
       opacity: .92;
       letter-spacing: .4px;
       text-transform: uppercase;
-      padding:3px; 
-      
+      padding:3px;
     }
 
-
-    
     #fuelValue{
-
-  position: absolute;
-  inset: 0;                 /* fills the bar */
-  display: none;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .3px;
-
-  color: rgb(255, 39, 39);
- 
-
-  pointer-events: none;
-  user-select: none;
-  z-index:2000;
-}
-
-                
-    
-    #fuelBarWrap{
-        position: relative;
-  width: 20px;
-  height: 100px;
-  background: rgba(99, 99, 99, 0.48);
-  border: 2px solid rgb(0, 0, 0);
-  border-radius: 3px;
-  overflow: hidden;
-      
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      color: rgb(255, 39, 39);
+      pointer-events: none;
+      user-select: none;
+      z-index:2000;
     }
 
-
+    #fuelBarWrap{
+      position: relative;
+      width: 20px;
+      height: 100px;
+      background: rgba(99, 99, 99, 0.48);
+      border: 2px solid rgb(0, 0, 0);
+      border-radius: 3px;
+      overflow: hidden;
+    }
 
     #fuelBar{
-        position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(105, 228, 68, 0.973);
-  transform-origin: bottom center;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(105, 228, 68, 0.973);
+      transform-origin: bottom center;
       transform: scaleY(1);
     }
 
-    /* 3 horizontal tick marks */
-.fuelTick{
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: rgba(0, 0, 0, 0.85);
-  
-  pointer-events: none;
-}
-
-/* positions: 100/200/300 out of 400 => 25%, 50%, 75% */
-.fuelTick.t1{ bottom: 25%; }
-.fuelTick.t2{ bottom: 50%; }
-.fuelTick.t3{ bottom: 75%; }
+    .fuelTick{
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.85);
+      pointer-events: none;
+    }
+    .fuelTick.t1{ bottom: 25%; }
+    .fuelTick.t2{ bottom: 50%; }
+    .fuelTick.t3{ bottom: 75%; }
 
     /* BIG STATUS */
     #bigStatus{
       position: fixed;
       left: 50%;
-      bottom: max(90px, env(safe-area-inset-bottom) + 76px);
+      bottom: max(14px, env(safe-area-inset-bottom));
       transform: translateX(-50%);
       width: calc(100vw - 28px);
-      max-width: 560px;
+      max-width: 520px;
       background: rgba(160, 7, 7, 0.45);
       border: 1px solid rgba(255, 0, 0, 0.05);
       border-radius: 4px;
@@ -319,7 +293,7 @@
     #bigStatus .sub{
       margin-top: 2px;
       font-size: 18px;
-	  font-weight: 700;
+      font-weight: 700;
       letter-spacing: .6px;
       opacity: .9;
       letter-spacing: .2px;
@@ -385,10 +359,6 @@
       display: grid;
       place-items: center;
       border-radius: 14px;
-      /* background: rgba(0,0,0,.18);
-      border: 1px solid rgba(255,255,255,.22);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px); */
     }
     .pickup img{
       width: 26px; height: 26px;
@@ -397,7 +367,6 @@
     }
     .pickup .val{
       position: absolute;
-
       font-size: 10px;
       font-weight: 1000;
       color: rgba(255,255,255,.95);
@@ -424,18 +393,23 @@
 
     <div class="row">
       <div class="rowHeader"><div class="label">Warning time (s) (cells turn red)</div><div class="val" id="v_warn"></div></div>
-      <input id="warnSec" type="range" min="2" max="400" step="10" value="300" />
+      <input id="warnSec" type="range" min="10" max="400" step="10" value="300" />
     </div>
-
 
     <div class="row">
       <div class="rowHeader"><div class="label">Fuel drain in holes (per second)</div><div class="val" id="v_fuelDrain"></div></div>
       <input id="fuelDrain" type="range" min="1" max="5" step="1" value="3" />
     </div>
 
+    <!-- Replaces Game duration slider -->
     <div class="row">
-      <div class="rowHeader"><div class="label">Game duration (min)</div><div class="val" id="v_gameMin"></div></div>
-      <input id="gameMin" type="range" min="5" max="120" step="5" value="20" />
+      <div class="rowHeader">
+        <div class="label">Estimated time until all cells fall</div>
+        <div class="val" id="v_est"></div>
+      </div>
+      <div style="font-size:12px; opacity:.85; line-height:1.25;">
+        Based on cell number + warning time. Game keeps going after that until fuel runs out.
+      </div>
     </div>
 
     <div class="btnRow">
@@ -463,7 +437,6 @@
     <div class="titleRow">
       <div class="t">1. Tap map and set up game area. </div>
       <div class="t">2. "Show Menu" at the top.</div>
-     
     </div>
     <div class="grid">
       <div class="miniRow">
@@ -489,26 +462,21 @@
     </div>
   </div>
 
-   <div id="fuelHudOver">
-<div id="fuelLabel2">Jet pack </div>
-
-
-
-  <div id="fuelHud">
-
-<div id="fuelLabel">400</div>
-<div id="fuelBarWrap">
-    <div id="fuelBar"></div>
-  <div id="fuelValue">100</div>
-    <div class="fuelTick t1"></div>
-  <div class="fuelTick t2"></div>
-  <div class="fuelTick t3"></div>
-</div>
-<div id="fuelLabel">0</div>
+  <div id="fuelHudOver">
+    <div id="fuelLabel2">Jet pack </div>
+    <div id="fuelHud">
+      <div id="fuelLabel">400</div>
+      <div id="fuelBarWrap">
+        <div id="fuelBar"></div>
+        <div id="fuelValue">100</div>
+        <div class="fuelTick t1"></div>
+        <div class="fuelTick t2"></div>
+        <div class="fuelTick t3"></div>
+      </div>
+      <div id="fuelLabel">0</div>
+    </div>
+    <div id="fuelLabel2">fuel</div>
   </div>
-<div id="fuelLabel2">fuel</div>
-  </div>
-
 
   <div id="bigStatus">
     <div class="main" id="bsMain">Waiting…</div>
@@ -562,7 +530,23 @@
       location.hash = parts.join("&");
     }
 
+    // ============================================================
+    // Formatting helpers
+    // ============================================================
+    function fmtMinSec(totalSec){
+      const s = Math.max(0, Math.round(totalSec));
+      const m = Math.floor(s/60);
+      const r = s % 60;
+      return m + "m " + String(r).padStart(2,"0") + "s";
+    }
 
+    // Estimated time until all cells fall:
+    // cycles ≈ ceil(N/2) + 1 (2 cells per cycle near end, then 1 at 3->2, and final cycle)
+    function estimateFallSeconds(nx, ny, warnSec){
+      const N = Math.max(0, Math.round(nx) * Math.round(ny));
+      const cycles = Math.ceil(N / 2) + 1;
+      return cycles * Math.max(1, Math.round(warnSec));
+    }
 
     // ============================================================
     // Seeded RNG (Mulberry32)
@@ -597,19 +581,19 @@
     }
 
     // ============================================================
-    // Self marker (filled red circle)
+    // Self marker (filled circle)
     // ============================================================
     let selfMarker = null;
     function setSelfMarker(latlng){
-        const style = {
-    radius: 8,
-    color: "#990000",     // outline
-    weight: 3,
-    fill: true,
-    fillColor: "#00c8ff", //fill
-    fillOpacity: 0.9,
-    opacity: 0.9
-  };
+      const style = {
+        radius: 8,
+        color: "#990000",
+        weight: 3,
+        fill: true,
+        fillColor: "#00c8ff",
+        fillOpacity: 0.9,
+        opacity: 0.9
+      };
 
       if (!selfMarker) selfMarker = L.circleMarker(latlng, style).addTo(map);
       else selfMarker.setLatLng(latlng);
@@ -675,17 +659,15 @@
     const fuelBarEl = document.getElementById("fuelBar");
     let fuel = 100;
     const FUEL_MAX = 400;
-
-let activeState = null;
-
     const FUEL_START = 100;
+
+    let activeState = null;
 
     function setFuel(v){
       fuel = clamp(v, 0, FUEL_MAX);
       fuelValueEl.textContent = String(Math.round(fuel));
       const pct = clamp(fuel / FUEL_MAX, 0, 1);
       fuelBarEl.style.transform = "scaleY(" + pct + ")";
-
       fuelBarEl.style.opacity = (fuel < 25 ? 0.75 : 0.95);
       if (activeState) savePlayerState(activeState);
     }
@@ -705,7 +687,6 @@ let activeState = null;
       return { x: x*c - y*s, y: x*s + y*c };
     }
 
-    // Convert a random point in the unrotated rectangle to latlng (respecting rotation)
     function localUnrotToLatLng(st, xUnrot, yUnrot){
       const centerLL = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
       const centerP  = projectLatLng(centerLL);
@@ -751,7 +732,6 @@ let activeState = null;
     }
 
     function buildGridPolys(st){
-      // NOTE: keep pickups separate; they live on map, not in gridLayer
       gridLayer.clearLayers();
       rectOutline = null;
       cellPolys = [];
@@ -767,7 +747,6 @@ let activeState = null;
       const dx = W / nx;
       const dy = H / ny;
 
-      // Rectangle corners
       const corners = [
         {x:-W/2, y:-H/2},
         {x: W/2, y:-H/2},
@@ -785,7 +764,6 @@ let activeState = null;
         interactive: false
       }).addTo(gridLayer);
 
-      // Cell polys
       for (let r = 0; r < ny; r++){
         for (let c = 0; c < nx; c++){
           const x0 = -W/2 + c*dx;
@@ -829,7 +807,7 @@ let activeState = null;
       const centerLL = L.latLng(st.baseCenter.lat, st.baseCenter.lng);
       const centerP = projectLatLng(centerLL);
 
-      const R = 50000; // 50km square, huge outer ring
+      const R = 50000;
       const outerPts = [
         unprojectPoint({x: centerP.x - R, y: centerP.y - R}),
         unprojectPoint({x: centerP.x + R, y: centerP.y - R}),
@@ -905,32 +883,34 @@ let activeState = null;
       return true;
     }
 
+    function playerStateKey(st){
+      return "fallingworld_player_" + st.seed + "_" + st.startedAtMs;
+    }
 
-function savePlayerState(st){
-  if (!st) return;
-  try {
-    localStorage.setItem(playerStateKey(st), JSON.stringify({
-      eliminated,
-      eliminatedAtMs: eliminatedAt ? eliminatedAt.getTime() : null,
-      eliminatedReason: eliminated ? (elimSmall.textContent || "") : null,
-      fuel,
-      fallsSurvived,
-      joinedAtMs: st.joinedAtMs || null
-    }));
-  } catch {}
-}
+    function savePlayerState(st){
+      if (!st) return;
+      try {
+        localStorage.setItem(playerStateKey(st), JSON.stringify({
+          eliminated,
+          eliminatedAtMs: eliminatedAt ? eliminatedAt.getTime() : null,
+          eliminatedReason: eliminated ? (elimSmall.textContent || "") : null,
+          fuel,
+          fallsSurvived,
+          joinedAtMs: st.joinedAtMs || null
+        }));
+      } catch {}
+    }
 
-function loadPlayerState(st){
-  try {
-    const raw = localStorage.getItem(playerStateKey(st));
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch { return null; }
-}
-
+    function loadPlayerState(st){
+      try {
+        const raw = localStorage.getItem(playerStateKey(st));
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch { return null; }
+    }
 
     // ============================================================
-    // Falling selection (combined removal connectivity fix)
+    // Falling selection
     // ============================================================
     function chooseFallSetDeterministic(st, cycleIndex, safeSet){
       const nx = st.gridNx, ny = st.gridNy;
@@ -943,13 +923,20 @@ function loadPlayerState(st){
       }
 
       const remaining = safeSet.size;
+
+      // Never remove the last safe cell(s): keep at least 2 safe cells.
       if (remaining <= 2) return safeArr.length ? [safeArr[0]] : [];
 
       const pct = clamp(0.10 + 0.06 * Math.min(1, cycleIndex / 12), 0.10, 0.22);
       let target = Math.max(1, Math.floor(remaining * pct));
-      target = clamp(target, 1, Math.min(10, remaining - 1));
-      if (remaining <= 12) target = clamp(target, 1, Math.min(4, remaining - 1));
-      if (remaining <= 7)  target = clamp(target, 1, Math.min(2, remaining - 1));
+
+      target = clamp(target, 1, Math.min(10, remaining - 2));
+      if (remaining <= 12) target = clamp(target, 1, Math.min(4, remaining - 2));
+      if (remaining <= 7)  target = clamp(target, 1, Math.min(2, remaining - 2));
+
+      if (remaining > 2 && remaining <= 10) {
+        target = Math.min(2, remaining - 2);
+      }
 
       function isConnectedAfterRemoving(removeSet){
         const newSafe = new Set(safeSet);
@@ -969,13 +956,11 @@ function loadPlayerState(st){
       function canAddCandidate(cand){
         if (!safeSet.has(cand)) return false;
 
-        // keep falling cells separated (8-neigh)
         for (const ch of chosen){
           if (ch === cand) return false;
           if (areAdjacent8(nx, ch, cand)) return false;
         }
 
-        // CRITICAL FIX: test connectivity after removing (chosen + cand)
         const removeSet = new Set(chosenSet);
         removeSet.add(cand);
 
@@ -993,14 +978,12 @@ function loadPlayerState(st){
         chosenSet.add(cand);
       }
 
-      // Guardrail: shrink until valid (shouldn't be needed, but ensures never disconnects)
       while (chosen.length > 0){
         const removeSet = new Set(chosen);
         if (isConnectedAfterRemoving(removeSet) && noIsolatedAfterRemoving(removeSet)) break;
         chosen.pop();
       }
 
-      // If no choice possible, try single removal
       if (chosen.length === 0){
         for (let i=0; i<safeArr.length; i++){
           const cand = safeArr[i];
@@ -1016,25 +999,22 @@ function loadPlayerState(st){
     }
 
     // ============================================================
-    // Phase schedule
+    // Phase schedule (NO time-based "finished")
     // ============================================================
     function computePhaseAtTime(st, tMs){
-  const start = st.startedAtMs;
-  const delayEnd = start + st.delaySec*1000;
-  const endAt = start + st.gameDurationSec*1000;
+      const start = st.startedAtMs;
+      const delayEnd = start + st.delaySec*1000;
 
-  if (tMs < start) return { kind: "prestart" };
-  if (tMs >= endAt) return { kind: "finished", endAtMs: endAt };
-  if (tMs < delayEnd) return { kind: "delay", tLeftMs: delayEnd - tMs, endAtMs: endAt };
+      if (tMs < start) return { kind: "prestart" };
+      if (tMs < delayEnd) return { kind: "delay", tLeftMs: delayEnd - tMs };
 
-  const elapsed = tMs - delayEnd;
-  const warnMs = st.warnSec*1000;
-  const cycleIndex = Math.floor(elapsed / Math.max(1, warnMs));
-  const within = elapsed - cycleIndex*warnMs;
+      const elapsed = tMs - delayEnd;
+      const warnMs = st.warnSec*1000;
+      const cycleIndex = Math.floor(elapsed / Math.max(1, warnMs));
+      const within = elapsed - cycleIndex*warnMs;
 
-  return { kind: "warning", cycleIndex, tLeftMs: warnMs - within, endAtMs: endAt };
-}
-
+      return { kind: "warning", cycleIndex, tLeftMs: warnMs - within };
+    }
 
     // ============================================================
     // Player position -> local unrotated coords + cell id
@@ -1069,10 +1049,10 @@ function loadPlayerState(st){
     }
 
     // ============================================================
-    // Fuel pickups (hearts style): not tied to cells
+    // Fuel pickups
     // ============================================================
-    let pickupMarkers = new Map();      // id -> marker
-    let collectedPickupIds = new Set(); // local only
+    let pickupMarkers = new Map();
+    let collectedPickupIds = new Set();
 
     function makeFuelIcon(value) {
       const html = `
@@ -1089,11 +1069,6 @@ function loadPlayerState(st){
       collectedPickupIds.clear();
     }
 
-function playerStateKey(st){
-  return "fallingworld_player_" + st.seed + "_" + st.startedAtMs;
-}
-
-
     function pickupsStorageKey(st){
       return "fallingworld_pickups_" + st.seed + "_" + st.startedAtMs;
     }
@@ -1104,23 +1079,20 @@ function playerStateKey(st){
     function buildSeededPickups(st){
       const rng = mulberry32(st.seed ^ 0xA53C9E17);
 
-      // ===== TUNE =====
-      const INITIAL_COUNT = 4;   // fuel pickups at game start
-      const SPAWN_EVERY_S = 20;   // interval spawn (like hearts)
-      const MAX_ACTIVE    = 12;   // cap active on map
+      const INITIAL_COUNT = 4;
+      const SPAWN_EVERY_S = 20;
+      const MAX_ACTIVE    = 12;
       const AMOUNTS       = [20, 40, 50, 50, 100, 25, 100];
-      // =================
 
       st.pickupMaxActive = MAX_ACTIVE;
 
-      const startAtMs = st.startedAtMs + st.delaySec*1000; // after delay
-      const endAtMs   = st.startedAtMs + st.gameDurationSec*1000;
+      const startAtMs = st.startedAtMs + st.delaySec*1000;     // after delay
+      const endAtMs   = st.lastFallAtMs;                       // until estimated last fall
 
       const picks = [];
       let id = 0;
 
       function randPosInRect(){
-        // uniform in unrotated rectangle
         const x = (rng() - 0.5) * st.rectWm;
         const y = (rng() - 0.5) * st.rectHm;
         return { x: x, y: y };
@@ -1160,15 +1132,17 @@ function playerStateKey(st){
     function updatePickups(st, nowMs, myLatLngOrNull){
       if (!st || !st.pickups) return;
 
+      // Stop spawning once everything has fallen
+      if (st.safeSet && st.safeSet.size === 0) return;
+
       const maxActive = st.pickupMaxActive || 16;
 
-      // Spawn when time arrives, respect cap
       for (let i=0; i<st.pickups.length; i++){
         if (pickupMarkers.size >= maxActive) break;
 
         const p = st.pickups[i];
         if (p.spawned) continue;
-        if (nowMs < p.spawnAtMs) break; // sorted
+        if (nowMs < p.spawnAtMs) break;
 
         p.spawned = true;
 
@@ -1178,10 +1152,9 @@ function playerStateKey(st){
         pickupMarkers.set(p.id, m);
       }
 
-      // Collection by distance (not cell-based)
       if (!myLatLngOrNull) return;
 
-      const PICKUP_RADIUS_M = 12; // tune
+      const PICKUP_RADIUS_M = 12;
 
       for (let i=0; i<st.pickups.length; i++){
         const p = st.pickups[i];
@@ -1222,8 +1195,6 @@ function playerStateKey(st){
 
     const delaySecEl = document.getElementById("delaySec");
     const warnSecEl  = document.getElementById("warnSec");
-    
-    const gameMinEl  = document.getElementById("gameMin");
     const fuelDrainEl = document.getElementById("fuelDrain");
 
     const rectWEl = document.getElementById("rectW");
@@ -1234,8 +1205,8 @@ function playerStateKey(st){
 
     const v_delay = document.getElementById("v_delay");
     const v_warn  = document.getElementById("v_warn");
+    const v_est   = document.getElementById("v_est");
 
-    const v_gameMin = document.getElementById("v_gameMin");
     const v_fuelDrain = document.getElementById("v_fuelDrain");
     const v_w = document.getElementById("v_w");
     const v_h = document.getElementById("v_h");
@@ -1246,8 +1217,6 @@ function playerStateKey(st){
     function reflectSliderValues(){
       v_delay.textContent = delaySecEl.value + " s";
       v_warn.textContent  = warnSecEl.value  + " s";
-    
-      v_gameMin.textContent = gameMinEl.value + " min";
       v_fuelDrain.textContent = fuelDrainEl.value + "/s";
 
       v_w.textContent = rectWEl.value + " m";
@@ -1255,6 +1224,10 @@ function playerStateKey(st){
       v_nx.textContent = gridNxEl.value;
       v_ny.textContent = gridNyEl.value;
       v_rot.textContent = gridRotEl.value + "°";
+
+      const estFallSec = estimateFallSeconds(Number(gridNxEl.value), Number(gridNyEl.value), Number(warnSecEl.value));
+      const totalEst = Number(delaySecEl.value) + estFallSec;
+      v_est.textContent = fmtMinSec(totalEst);
     }
     reflectSliderValues();
 
@@ -1280,7 +1253,7 @@ function playerStateKey(st){
     hideUiBtn.onclick = hideHostPanel;
     showUiBtn.onclick = function(){ enableHostPanel(); };
 
-    const allSliders = [delaySecEl, warnSecEl, gameMinEl, fuelDrainEl, rectWEl, rectHEl, gridNxEl, gridNyEl, gridRotEl];
+    const allSliders = [delaySecEl, warnSecEl, fuelDrainEl, rectWEl, rectHEl, gridNxEl, gridNyEl, gridRotEl];
     for (let i=0; i<allSliders.length; i++){
       allSliders[i].addEventListener("input", function(){
         reflectSliderValues();
@@ -1346,8 +1319,6 @@ function playerStateKey(st){
 
         delay: Math.round(Number(delaySecEl.value)),
         warn:  Math.round(Number(warnSecEl.value)),
-        
-        gameMin: Math.round(Number(gameMinEl.value)),
         fd: Math.round(Number(fuelDrainEl.value)),
 
         w: Math.round(Number(rectWEl.value)),
@@ -1439,8 +1410,6 @@ function playerStateKey(st){
       const baseCenter = { lat: Number(p.lat), lng: Number(p.lng) };
       const delaySec = Number(p.delay);
       const warnSec  = Number(p.warn);
-      
-      const gameMin  = Number(p.gameMin);
       const fuelDrainPerSec = Number(p.fd);
 
       const rectWm = Number(p.w);
@@ -1452,19 +1421,21 @@ function playerStateKey(st){
       const seed = Number(p.seed) >>> 0;
       const startedAtMs = Number(p.t0);
 
-      const okNums = [baseCenter.lat, baseCenter.lng, delaySec, warnSec, gameMin, fuelDrainPerSec, rectWm, rectHm, gridNx, gridNy, gridRotDeg, seed, startedAtMs]
+      const okNums = [baseCenter.lat, baseCenter.lng, delaySec, warnSec, fuelDrainPerSec, rectWm, rectHm, gridNx, gridNy, gridRotDeg, seed, startedAtMs]
         .every(function(x){ return Number.isFinite(x); });
       if (!okNums) return false;
 
+      const estFallSec = estimateFallSeconds(gridNx, gridNy, warnSec);
+      const lastFallAtMs = startedAtMs + delaySec*1000 + estFallSec*1000;
+
       activeState = {
-        version: 1,
+        version: 2,
         seed: seed,
         startedAtMs: startedAtMs,
         baseCenter: baseCenter,
 
         delaySec: delaySec,
         warnSec: warnSec,
-        gameDurationSec: Math.max(60, gameMin*60),
         fuelDrainPerSec: clamp(Math.round(fuelDrainPerSec), 1, 200),
 
         rectWm: clamp(Math.round(rectWm), 40, 3000),
@@ -1473,10 +1444,15 @@ function playerStateKey(st){
         gridNy: clamp(Math.round(gridNy), 2, 40),
         gridRotDeg: clamp(Math.round(gridRotDeg), -180, 180),
 
+        estFallSec: estFallSec,
+        lastFallAtMs: lastFallAtMs,
+
         safeSet: new Set(),
         lastAppliedCycle: -1,
         activeFallSet: [],
         pickups: null,
+
+        allFallenNoted: false
       };
 
       // Build grid visuals
@@ -1488,12 +1464,11 @@ function playerStateKey(st){
       activeState.safeSet = new Set();
       for (let i=0; i<total; i++) activeState.safeSet.add(i);
 
-      activeState.joinedAtMs = Date.now(); // default: first time this player joins
+      activeState.joinedAtMs = Date.now();
       const savedPS = loadPlayerState(activeState);
       if (savedPS && Number.isFinite(savedPS.joinedAtMs)) {
         activeState.joinedAtMs = savedPS.joinedAtMs;
       }
-
 
       // Restore falls survived
       try {
@@ -1501,59 +1476,49 @@ function playerStateKey(st){
         fallsSurvived = saved ? (Number(saved) || 0) : 0;
       } catch { fallsSurvived = 0; }
 
-
-
-      
       // Restore collected pickups
       try {
         const saved = JSON.parse(localStorage.getItem(pickupsStorageKey(activeState)) || "[]");
         collectedPickupIds = new Set(saved);
       } catch { collectedPickupIds = new Set(); }
 
-      // Rebuild pickups schedule
+      // Rebuild pickups schedule (uses lastFallAtMs)
       activeState.pickups = buildSeededPickups(activeState);
 
-const ps = loadPlayerState(activeState);
-if (ps){
-  if (Number.isFinite(ps.fuel)) setFuel(ps.fuel);
-  if (Number.isFinite(ps.fallsSurvived)) fallsSurvived = ps.fallsSurvived;
+      const ps = loadPlayerState(activeState);
+      if (ps){
+        if (Number.isFinite(ps.fuel)) setFuel(ps.fuel);
+        if (Number.isFinite(ps.fallsSurvived)) fallsSurvived = ps.fallsSurvived;
 
-  if (ps.eliminated){
-    // restore eliminated UI without “reviving”
-    eliminated = true;
-    eliminatedAt = ps.eliminatedAtMs ? new Date(ps.eliminatedAtMs) : new Date();
+        if (ps.eliminated){
+          eliminated = true;
+          eliminatedAt = ps.eliminatedAtMs ? new Date(ps.eliminatedAtMs) : new Date();
+          const tStr = eliminatedAt.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+          const reason = ps.eliminatedReason || "You are out";
 
-    // show overlay/frame and status; skip sound by not calling eliminate()
-    const tStr = eliminatedAt.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit" });
-    const reason = ps.eliminatedReason || "You are out";
+          elimSmall.innerHTML =
+            reason
+            + `<br><span class="elimTime">Eliminated at ${tStr}</span>`
+            + `<br><span class="elimTime">Falls survived: ${fallsSurvived}</span>`;
 
-    elimSmall.innerHTML =
-      reason
-      + `<br><span class="elimTime">Eliminated at ${tStr}</span>`
-      + `<br><span class="elimTime">Falls survived: ${fallsSurvived}</span>`;
+          elimOverlay.style.display = "flex";
+          elimFrame.style.display = "block";
+          setBigStatus("ELIMINATED", reason, true);
+        } else {
+          eliminated = false;
+          eliminatedAt = null;
+          elimOverlay.style.display = "none";
+          elimFrame.style.display = "none";
+        }
+      } else {
+        eliminated = false;
+        eliminatedAt = null;
+        elimOverlay.style.display = "none";
+        elimFrame.style.display = "none";
+        setFuel(FUEL_START);
+      }
 
-    elimOverlay.style.display = "flex";
-    elimFrame.style.display = "block";
-    setBigStatus("ELIMINATED", reason, true);
-  } else {
-    eliminated = false;
-    eliminatedAt = null;
-    elimOverlay.style.display = "none";
-    elimFrame.style.display = "none";
-  }
-} else {
-  // no saved player state -> normal start
-  eliminated = false;
-  eliminatedAt = null;
-  elimOverlay.style.display = "none";
-  elimFrame.style.display = "none";
-  setFuel(FUEL_START);
-}
-
-
-      // Clear old markers; existing pickup IDs in storage will prevent re-collect
       clearPickups();
-
       map.setView([baseCenter.lat, baseCenter.lng], 14);
 
       return true;
@@ -1565,7 +1530,6 @@ if (ps){
     // Falling cycles
     // ============================================================
     function setWarningCells(st, cycleIndex){
-      // clear old warnings
       for (let i=0; i<cellState.length; i++){
         if (cellState[i] === 1) cellState[i] = 0;
       }
@@ -1594,14 +1558,12 @@ if (ps){
       }
 
       if (fellAny){
-  // Only count as "survived" if you were alive when it happened,
-  // and you had already joined before the fall.
-  if (!eliminated && (!st.joinedAtMs || nowMs >= st.joinedAtMs)){
-    fallsSurvived++;
-    if (activeState) savePlayerState(activeState);
-    try { localStorage.setItem(fallsStorageKey(st), String(fallsSurvived)); } catch {}
-  }
-}
+        if (!eliminated && (!st.joinedAtMs || nowMs >= st.joinedAtMs)){
+          fallsSurvived++;
+          if (activeState) savePlayerState(activeState);
+          try { localStorage.setItem(fallsStorageKey(st), String(fallsSurvived)); } catch {}
+        }
+      }
 
       applyCellStyles();
     }
@@ -1623,73 +1585,74 @@ if (ps){
 
         if (!wakeLock) requestWakeLock();
 
-        // Outside mask after delay
-        const gameHasStarted = (ph.kind === "warning" || ph.kind === "falling" || ph.kind === "finished");
+        const gameHasStarted = (ph.kind === "warning");
         setOutsideMaskVisible(gameHasStarted);
 
-        // Always spawn/render pickups even before GPS resolves
+        // Always spawn/render pickups even before GPS resolves (but stops once all fallen)
         if (!eliminated && st.pickups) {
           updatePickups(st, t, null);
         }
 
         if (ph.kind === "warning"){
-  const sLeft = Math.ceil(ph.tLeftMs/1000);
-  setBigStatus("Move from the red areas!", "They will fall in " + sLeft + "s", false);
+          if (st.safeSet.size === 0){
+            if (!st.allFallenNoted){
+              st.allFallenNoted = true;
+            }
+            setBigStatus("All ground has fallen", "Fuel draining…", true);
+          } else {
+            const sLeft = Math.ceil(ph.tLeftMs/1000);
+            setBigStatus("Move from the red areas!", "They will fall in " + sLeft + "s", false);
 
-  // When a new cycle starts, instantly drop last cycle's red cells,
-  // then choose new red cells for this cycle.
-  if (st.lastAppliedCycle !== ph.cycleIndex || lastPhaseKind !== "warning"){
-    // If we already had a previous cycle, drop its selected cells now.
-    if (st.lastAppliedCycle >= 0 && st.activeFallSet && st.activeFallSet.length){
-      applyFall(st, t); // turns those red cells into holes immediately
-    }
+            if (st.lastAppliedCycle !== ph.cycleIndex || lastPhaseKind !== "warning"){
+              if (st.lastAppliedCycle >= 0 && st.activeFallSet && st.activeFallSet.length){
+                applyFall(st, t);
+              }
+              st.lastAppliedCycle = ph.cycleIndex;
+              setWarningCells(st, ph.cycleIndex);
+            }
+          }
+        }
+        else if (ph.kind === "delay"){
+          const s = Math.ceil(ph.tLeftMs/1000);
+          setBigStatus("Time until game starts", s + "s", false);
+        }
 
-    st.lastAppliedCycle = ph.cycleIndex;
-    setWarningCells(st, ph.cycleIndex); // pick + paint new red cells
-  }
-}
-else if (ph.kind === "delay"){
-  const s = Math.ceil(ph.tLeftMs/1000);
-  setBigStatus("Time until game starts", s + "s", false);
-}
-else if (ph.kind === "finished"){
-  setBigStatus("Game ended", "", false);
-}
-
-        // Player checks (only if we have location)
-        if (!eliminated && (ph.kind === "warning" || ph.kind === "falling")){
+        // Player checks (only if we have location) - run during warning & after delay too
+        if (!eliminated && (ph.kind === "warning" || ph.kind === "delay")){
 
           const myPos = selfMarker ? selfMarker.getLatLng() : null;
           if (myPos){
-  const unrot = pointToLocalUnrot(st, myPos);
-  const inside = isInsideRectUnrot(st, unrot.x, unrot.y);
+            const unrot = pointToLocalUnrot(st, myPos);
+            const inside = isInsideRectUnrot(st, unrot.x, unrot.y);
 
-  // allow collection when we do have location
-  if (st.pickups) updatePickups(st, t, myPos);
+            if (st.pickups) updatePickups(st, t, myPos);
 
-  const drainRate = (st.fuelDrainPerSec || 18);
+            const drainRate = (st.fuelDrainPerSec || 18);
 
-  if (!inside){
-    // Outside acts like a void/hole: drain fuel, die when empty.
-    setFuel(fuel - drainRate * dt);
-    if (fuel <= 0.001){
-      setFuel(0);
-      eliminate("Out of fuel outside the area");
-    }
-  } else {
-    const myCell = localXYToCellId(st, unrot.x, unrot.y);
-    const inFallen = (myCell >= 0 && cellState[myCell] === 2);
+            if (!inside){
+              // Outside drains fuel always once the game link is loaded,
+              // but we only "activate" the outside mask visually after delay.
+              // (You can change this if you only want outside drain after delay.)
+              if (ph.kind === "warning"){
+                setFuel(fuel - drainRate * dt);
+                if (fuel <= 0.001){
+                  setFuel(0);
+                  eliminate("Out of fuel outside the area");
+                }
+              }
+            } else {
+              const myCell = localXYToCellId(st, unrot.x, unrot.y);
+              const inFallen = (myCell >= 0 && cellState[myCell] === 2);
 
-    if (inFallen){
-      setFuel(fuel - drainRate * dt);
-      if (fuel <= 0.001){
-        setFuel(0);
-        eliminate("Out of fuel in a hole");
-      }
-    }
-  }
-}
-
+              if (inFallen){
+                setFuel(fuel - drainRate * dt);
+                if (fuel <= 0.001){
+                  setFuel(0);
+                  eliminate("Out of fuel in a hole");
+                }
+              }
+            }
+          }
         }
 
         lastPhaseKind = ph.kind;
@@ -1709,9 +1672,6 @@ else if (ph.kind === "finished"){
       statusSmall.textContent = "Tap the map to pick start center.";
       setBigStatus("Waiting…", "", false);
     }
-
-    // If not a guest link, host can open panel
-    // (panel stays hidden until they press Show Menu)
   </script>
 </body>
 </html>
