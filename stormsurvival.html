@@ -262,22 +262,18 @@
       display: grid;
       place-items: center;
       border-radius: 14px;
-      background: rgba(0,0,100,.22);
-      border: 1px solid rgba(0,100,255,.25);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+
     }
     .pickup img{
-      width: 26px; height: 26px;
+      width: 34px; height: 34px;
       filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
       opacity: .95;
     }
     .pickup .val{
       position: absolute;
-      bottom: 2px;
-      right: 4px;
-      font-size: 12px;
-      font-weight: 1000;
+     top:12px;
+      font-size: 9px;
+      font-weight: 700;
       color: rgba(255,255,255,.95);
       text-shadow: 0 2px 10px rgba(0,0,0,.6);
     }
@@ -500,20 +496,20 @@
 
     // Local-only self marker (never shared)
     let selfMarker = null;
-    function setSelfMarker(latlng){
-      const style = {
-        radius: 10,
-        color: "#990000",     // outline
-        weight: 3,
-        fill: true,
-        fillColor: "#00c8ff", // red fill
-        fillOpacity: 1,
-        opacity: 1
-      };
-    
-      if (!selfMarker) selfMarker = L.circleMarker(latlng, style).addTo(map);
-      else selfMarker.setLatLng(latlng);
-      }
+function setSelfMarker(latlng){
+  const style = {
+    radius: 10,
+    color: "#990000",     // outline
+    weight: 3,
+    fill: true,
+    fillColor: "#00c8ff", // red fill
+    fillOpacity: 1,
+    opacity: 1
+  };
+
+  if (!selfMarker) selfMarker = L.circleMarker(latlng, style).addTo(map);
+  else selfMarker.setLatLng(latlng);
+}
     if (navigator.geolocation) {
       navigator.geolocation.watchPosition(
         (pos) => setSelfMarker([pos.coords.latitude, pos.coords.longitude]),
@@ -1303,5 +1299,3 @@
   </script>
 </body>
 </html>
-
-
